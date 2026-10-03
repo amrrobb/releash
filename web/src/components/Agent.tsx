@@ -26,7 +26,7 @@ export function CeilingBar({ a, compact = false }: { a: Authority; compact?: boo
   const debtShift = compact && near ? (debt <= knob ? "translateX(-100%)" : "translateX(0)") : undefined;
   const knobShift = compact && near ? (debt <= knob ? "translateX(-20%)" : "translateX(-100%)") : undefined;
   return (
-    <div className="ceiling" data-testid="authority-meter">
+    <div className={`ceiling${compact ? " ceiling--compact" : ""}`} data-testid="authority-meter">
       <div className="ceiling__track" aria-hidden>
         <div className="ceiling__rail" />
         <div className="ceiling__fill" style={{ width: `${knob}%` }} />

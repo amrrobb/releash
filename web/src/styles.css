@@ -467,3 +467,11 @@ section.feed { padding: 24px 28px 18px; display: flex; flex-direction: column; }
   .figures { flex-wrap: wrap; }
   .demo [style*="margin-left: 46px"] { margin-left: 0 !important; }
 }
+.app section.feed .feed__list { max-height: 700px; overflow-y: auto; }
+.app .trade { align-self: start; }
+.ceiling.ceiling--compact { margin-top: 22px; }
+@media (max-width: 720px) {
+  .ltv__lbl .w { display: none; }
+  .ltv__title { display: block; padding: 0 0 8px; }
+  .ltv__liq { flex-wrap: wrap; }
+}

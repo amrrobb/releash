@@ -20,17 +20,17 @@ const ICON: Partial<Record<Kind, [string, React.ReactElement]>> = {
   withdraw: ["grey", <ArrowUp />],
 };
 
-function Row({ it, pinned, full }: { it: Item; pinned: boolean; full: boolean }) {
+function Row({ it, pinned, full }: { it: Item & { count?: number }; pinned: boolean; full: boolean }) {
   const [tone, icon] = ICON[it.kind] ?? ["grey", <Doc />];
   const muted = it.kind === "hold" || it.kind === "skipped";
   return (
     <li className={`feed__item${muted ? " feed__item--muted" : ""}`} data-testid={pinned ? "feed-pinned" : undefined} title={it.raw}>
       <span className={`feed__icon feed__icon--${tone}`}>{icon}</span>
       <div>
-        <div className="feed__title num">{it.title}</div>
+        <div className="feed__title num">{it.title}{it.count && it.count > 1 ? <span className="muted"> ×{it.count}</span> : null}</div>
         {it.detail && <p className="feed__detail">{it.detail}</p>}
         {it.effect && <p className="feed__effect num">{it.effect}</p>}
-        {full && it.raw && it.raw !== it.detail && /Jev:|model/.test(it.raw) && <p className="feed__raw">{it.raw}</p>}
+        {full && it.raw && /Jev:/.test(it.raw) && <p className="feed__raw num">{it.raw.slice(it.raw.indexOf("Jev:")).replace(/\s*Not sent:.*$/, "")}</p>}
         <div className="feed__meta">
           <span><span className="src">{it.source}</span> · <time className="num">{fmtClock(it.ts)}</time></span>
           {it.txHash && EXPLORER && (
@@ -51,6 +51,16 @@ export function Activity({ owner, variant }: { owner?: Address; variant: "demo" 
   const { items, logOffline } = useActivity(owner, demo ? { sinceMandate: true, actionsOnly: true, limit: 3 } : { limit: 40 });
   // The pinned row is the newest thing the agent actually did, never a hold or a skip.
   const pinnedId = items.find((it) => it.action)?.id;
+  // One decision every ~10 s: fold runs of identical holds into one row with a count.
+  const rows: (Item & { count?: number })[] = [];
+  for (const it of items) {
+    const prev = rows[rows.length - 1];
+    if (prev && it.kind === "hold" && prev.kind === "hold" && prev.source === it.source && prev.detail?.replace(/[\d.]+%/g, "") === it.detail?.replace(/[\d.]+%/g, "")) {
+      prev.count = (prev.count ?? 1) + 1;
+      continue;
+    }
+    rows.push({ ...it });
+  }
   return (
     <section className="card feed" aria-labelledby="feed-h">
       <div className="card__head">
@@ -59,7 +69,7 @@ export function Activity({ owner, variant }: { owner?: Address; variant: "demo" 
       </div>
       {logOffline && <p className="feed__detail">Agent log offline. Showing on-chain events only.</p>}
       <ol className="feed__list" data-testid="feed">
-        {items.map((it) => <Row key={it.id} it={it} pinned={it.id === pinnedId} full={!demo} />)}
+        {rows.map((it) => <Row key={it.id} it={it} pinned={it.id === pinnedId} full={!demo} />)}
       </ol>
       {items.length === 0 && (
         <p className="feed__empty">{demo ? "Nothing yet. What the agent does in this run appears here." : "Nothing yet. Decisions and on-chain events appear here as they happen."}</p>
