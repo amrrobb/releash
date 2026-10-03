@@ -106,6 +106,9 @@ export function Feed({ owner }: { owner?: Address }) {
     items = out.slice(0, 80);
   }
 
+  // Pin the newest thing the agent actually did (borrow, deleverage, or a refused attempt).
+  const pinned = items.find((it) => /^(Agent (borrowed|deleveraged)|Blocked on-chain)/.test(it.title));
+
   return (
     <section className="panel feed" aria-labelledby="feed-h">
       <header className="panel__head">
@@ -113,6 +116,14 @@ export function Feed({ owner }: { owner?: Address }) {
         <span className={`dot ${log.isError ? "dot--off" : "dot--on"}`} title={log.isError ? "Agent log unavailable" : "Live"} />
       </header>
       {log.isError && <p className="quiet small notice">Agent log offline. Showing on-chain events only.</p>}
+      {pinned && (
+        <div key={pinned.id} className={`feed__pin feed__pin--${pinned.tone}`} data-testid="feed-pinned">
+          <div className="feed__pin-label">Latest agent action · <time className="num">{new Date(pinned.ts * 1000).toLocaleTimeString("en-GB")}</time></div>
+          <div className="feed__title">{pinned.title}</div>
+          {pinned.effect && <div className="feed__detail feed__effect num">{pinned.effect}</div>}
+          {pinned.detail && <div className="feed__detail">{pinned.detail}</div>}
+        </div>
+      )}
       {!owner ? (
         <p className="empty">Connect to see your agent's decisions.</p>
       ) : items.length === 0 ? (

@@ -1,5 +1,5 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Abi, Address } from "viem";
 import { explainError, send } from "./chain";
 import { useSigner } from "./signer";
@@ -39,6 +39,13 @@ export function useTx() {
       await qc.invalidateQueries();
     }
   }
+
+  // "Confirmed on-chain" is a moment, not a state: clear it so it never reads as stale.
+  useEffect(() => {
+    if (!done) return;
+    const id = setTimeout(() => setDone(null), 6000);
+    return () => clearTimeout(id);
+  }, [done]);
 
   const run = async (label: string, calls: Call[] | (() => Call[] | Promise<Call[]>)) => (await attempt(label, calls)) === null;
 

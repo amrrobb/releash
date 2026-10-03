@@ -49,3 +49,14 @@ manual trigger was needed.
 2. Pin the latest non-hold agent action above the feed list, so the 30% line stays visible during the gap.
 3. Clear the "Confirmed on-chain" notices after about 6 s.
 4. Show an elapsed timer while Reset demo runs, since it can take close to a minute.
+
+## Batch 4 follow-up (13:51–13:54 JST, beats 2, 3, 6, 7 and 9 rerun with `BEATS=2,3,6,7,9`; all pass)
+- **Equity in the demo strip.** Each card now shows equity (collateral at the oracle price minus debt). The control
+  shows "Lost to liquidation: X rNVDA", read from the `Liquidated` events. A column between the cards reads
+  "Releash kept $X more equity". In `07-monday-gap-35.png`: Alice $3,786.99, control $2,629.00, delta $1,157.99, and
+  the control lost 39.66 rNVDA. All of these match `cast` (85.28 × 116.49 − 6,147.25; 60.34 × 116.49 − 4,400).
+- **Delta before the gap.** Right after a reset the delta shows about $800 because the starting debts differ (8,000
+  against 8,800), and pool slippage shows as "De-risking cost so far" until the gap. Both are true, but say it on stage.
+- **Latest agent action is pinned** at the top of the feed. "Confirmed on-chain" clears after 6 s. Reset demo shows an
+  elapsed-seconds counter.
+- The 01–09 screenshots for beats 2, 3, 6, 7 and 9 now show the new UI. Driver: `rehearsal.mjs`; see its header.

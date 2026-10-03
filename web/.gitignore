@@ -4,3 +4,5 @@ dist/
 !.env.example
 *.tsbuildinfo
 rehearsal/*.webm
+rehearsal/.results.json
+rehearsal/video/

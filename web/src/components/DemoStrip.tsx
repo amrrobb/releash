@@ -1,5 +1,5 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { getAddress, isAddress, type Address } from "viem";
 import { CONTROL_OWNER, DEMO_KEY, EXPLORER } from "../config";
 import { api, useMarket } from "../lib/backend";
@@ -7,8 +7,23 @@ import { fmtNum, fmtUsd, px8, short, stock, usd } from "../lib/math";
 import { useEvents, useVault, type VaultState } from "../lib/reads";
 import { LtvGauge } from "./LtvGauge";
 
-function Side({ title, tag, owner, state, liquidated }: { title: string; tag: string; owner?: Address; state?: VaultState; liquidated: boolean }) {
-  const status = !state ? "—" : liquidated ? "LIQUIDATED" : state.liquidatable ? "LIQUIDATABLE" : "SAFE";
+type Ev = { name: string; blockNumber: bigint; args: Record<string, unknown> };
+
+/** Liquidations after the position was last opened (Reset demo re-borrows; older runs must not count). */
+function liquidationsSinceOpen(evs?: Ev[]): Ev[] {
+  if (!evs?.length) return [];
+  const opened = evs.reduce((m, e) => (e.name === "Borrowed" && e.blockNumber > m ? e.blockNumber : m), -1n);
+  return evs.filter((e) => e.name === "Liquidated" && e.blockNumber >= opened);
+}
+
+/** Equity = collateral value at the current oracle price minus debt (USDG). */
+export const equityOf = (s?: VaultState) => (s ? usd(s.value) - usd(s.position.debt) : undefined);
+
+function Side({ title, tag, owner, state, events }: { title: string; tag: string; owner?: Address; state?: VaultState; events?: Ev[] }) {
+  const liqs = liquidationsSinceOpen(events);
+  const status = !state ? "—" : liqs.length ? "LIQUIDATED" : state.liquidatable ? "LIQUIDATABLE" : "SAFE";
+  const lost = liqs.reduce((sum, e) => sum + Number(e.args.collateralSeized as bigint) / 1e18, 0);
+  const equity = equityOf(state);
   return (
     <div className={`side side--${status.toLowerCase()}`} data-testid={`side-${tag}`}>
       <div className="side__head">
@@ -20,11 +35,20 @@ function Side({ title, tag, owner, state, liquidated }: { title: string; tag: st
         </div>
         <span className={`pill pill--${status.toLowerCase()}`}>{status}</span>
       </div>
+      <div className="side__equity">
+        <span className="label">Equity</span>
+        <span className="num" data-testid={`equity-${tag}`}>{equity === undefined ? "—" : fmtUsd(equity)}</span>
+      </div>
       <LtvGauge ltvBps={state?.ltvBps ?? 0} size="sm" />
       <div className="side__stats num">
         <span>{state ? fmtNum(stock(state.position.collateral)) : "—"} rNVDA</span>
         <span>{state ? fmtUsd(usd(state.position.debt)) : "—"} debt</span>
       </div>
+      {lost > 0 && (
+        <div className="side__lost" data-testid={`lost-${tag}`}>
+          Lost to liquidation: <span className="num">{fmtNum(lost)} rNVDA</span>
+        </div>
+      )}
     </div>
   );
 }
@@ -68,14 +92,6 @@ export function DemoStrip({ owner, state }: { owner?: Address; state?: VaultStat
   const qc = useQueryClient();
   const [pending, setPending] = useState<string | null>(null);
   const [result, setResult] = useState<{ tone: "ok" | "bad"; text: string; txHash?: string } | null>(null);
-  // Liquidated only counts if it happened after the position was last opened: Reset demo re-borrows,
-  // and an old liquidation must not paint a fresh control red before the gap.
-  const liq = (evs?: { name: string; blockNumber: bigint }[]) => {
-    if (!evs?.length) return false;
-    const last = (n: string) => evs.reduce((m, e) => (e.name === n && e.blockNumber > m ? e.blockNumber : m), -1n);
-    const liquidated = last("Liquidated");
-    return liquidated >= 0n && liquidated >= last("Borrowed");
-  };
 
   async function run(label: string, path: string, body: unknown, describe: (r: never) => { tone: "ok" | "bad"; text: string; txHash?: string }) {
     setPending(label);
@@ -110,6 +126,25 @@ export function DemoStrip({ owner, state }: { owner?: Address; state?: VaultStat
       return { tone: "ok", text: "Demo reset: Alice and the control start again from the same position." };
     });
 
+  // Reset runs a dozen transactions: show it is alive.
+  const [since, setSince] = useState<number | null>(null);
+  const [, tick] = useState(0);
+  useEffect(() => {
+    if (!pending) {
+      setSince(null);
+      return;
+    }
+    setSince(Date.now());
+    const id = setInterval(() => tick((n) => n + 1), 500);
+    return () => clearInterval(id);
+  }, [pending]);
+  const elapsed = since ? Math.floor((Date.now() - since) / 1000) : 0;
+
+  const eqA = equityOf(aliceState);
+  const eqC = equityOf(control.data);
+  const hasBoth = eqA !== undefined && eqC !== undefined && !!aliceState?.position.collateral && !!control.data?.position.collateral;
+  const delta = hasBoth ? eqA! - eqC! : 0;
+
   const busy = !!pending;
   const noKey = !DEMO_KEY;
   return (
@@ -120,16 +155,39 @@ export function DemoStrip({ owner, state }: { owner?: Address; state?: VaultStat
           <strong className={!market.data ? "unknown" : market.data.open === false ? "closed" : ""}>{market.data ? market.data.label : "unknown"}</strong>
           <span className="quiet num">rNVDA {aliceState ? fmtUsd(px8(aliceState.price8)) : "—"}</span>
         </div>
-        <Side title="Alice · with Releash" tag="releash" owner={alice} state={aliceState} liquidated={liq(aliceEvents.data)} />
-        <Side title="Control · no agent" tag="control" owner={controlOwner} state={control.data} liquidated={liq(controlEvents.data)} />
+        <Side title="Alice · with Releash" tag="releash" owner={alice} state={aliceState} events={aliceEvents.data} />
+        <div className={`delta ${hasBoth ? (delta > 0 ? "delta--up" : "delta--down") : ""}`} data-testid="equity-delta" aria-live="polite">
+          {hasBoth ? (
+            delta > 0 ? (
+              <>
+                <span>Releash kept</span>
+                <strong className="num">{fmtUsd(delta)}</strong>
+                <span>more equity</span>
+              </>
+            ) : (
+              <>
+                <span>De-risking cost so far</span>
+                <strong className="num">{fmtUsd(-delta)}</strong>
+                <span>pool slippage</span>
+              </>
+            )
+          ) : (
+            <span className="quiet">Equity difference appears once both positions exist.</span>
+          )}
+        </div>
+        <Side title="Control · no agent" tag="control" owner={controlOwner} state={control.data} events={controlEvents.data} />
       </div>
       <div className="demostrip__controls">
         <button className="btn btn--ghost btn--sm" onClick={close} disabled={busy || noKey} data-testid="demo-close">{pending === "Friday close" ? "Closing…" : "Friday close"}</button>
         <button className="btn btn--ghost btn--sm" onClick={gap} disabled={busy || noKey} data-testid="demo-gap">{pending === "Monday gap" ? "Gapping…" : "Monday gap −35%"}</button>
         <button className="btn btn--ghost btn--sm" onClick={attempt} disabled={busy || noKey || !alice} data-testid="demo-attempt">{pending === "Agent attempt" ? "Agent trying…" : "Agent tries $1,500"}</button>
         <button className="btn btn--ghost btn--sm" onClick={reset} disabled={busy || noKey} data-testid="demo-reset">{pending === "Reset" ? "Resetting…" : "Reset demo"}</button>
-        <span className={`demostrip__result ${result ? `demostrip__result--${result.tone}` : ""}`} role="status" data-testid="demo-result">
-          {noKey ? "Demo controls need VITE_DEMO_KEY." : pending ? `${pending}…` : result?.text}
+        <span className={`demostrip__result ${result ? `demostrip__result--${result.tone}` : ""}`} role="status" data-testid="demo-result" data-pending={pending ? "1" : undefined}>
+          {noKey
+            ? "Demo controls need VITE_DEMO_KEY."
+            : pending
+              ? `${pending}… ${elapsed}s${pending === "Reset" ? " (takes up to a minute)" : ""}`
+              : result?.text}
           {result?.txHash && (EXPLORER ? <a className="mono" href={`${EXPLORER}/tx/${result.txHash}`} target="_blank" rel="noreferrer"> {short(result.txHash)}</a> : <span className="mono"> {short(result.txHash)}</span>)}
         </span>
       </div>
