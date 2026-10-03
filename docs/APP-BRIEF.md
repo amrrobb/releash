@@ -186,3 +186,21 @@ Everything visual:
 - Typography, colour, whether the hero sits above or beside the app, whether "How it works" is a separate section or folded into the app.
 
 Live screenshots for reference: `web/screenshots/hosted-demo-1280.png`, `web/rehearsal/07-monday-gap-35.png`, `video/stills/`.
+
+## 8. Pages (proposed)
+
+Today everything lives on one long page, with `?demo=1` switching on the strip. Proposal: **4 pages, each with one job.** Judges spend about 2 minutes, so the first page has to send them to the demo, and the demo page has to carry the whole story on its own.
+
+| # | Route | Job | Contents | Priority |
+| --- | --- | --- | --- | --- |
+| 1 | `/` Landing | Explain the problem and the idea in 20 seconds, then send people to the demo | Tagline · Friday→Monday problem with the real 52 h / 78 h feed-freeze evidence · the asymmetry (reduce risk: always / add debt: decaying) as one visual · the headline result ("same gap: control liquidated, Releash kept ~$1.5–2k more equity") · CTA **Open live demo** and **Use with your wallet** · "Built on Robinhood Chain · USDG · World ID · Jev" | Must |
+| 2 | `/demo` Judge demo (replaces `?demo=1`) | Run the whole story on one screen, at 1920×1080 with no scrolling | Alice vs Control side by side (equity, LTV, SAFE/LIQUIDATED) · the equity difference after the gap · Alice's authority (the core visual) · compact agent feed with the pinned latest action · market clock · the 4 demo buttons · shared-account note | Must |
+| 3 | `/app` Borrower dashboard | What a real user sees with their own wallet | Your position + actions (deposit/borrow/repay/withdraw, faucet) · agent authority + mandate (appoint, renew, revoke, fire) · full agent feed · all 6 authority states | Must |
+| 4 | `/security` Contracts & trust | Win the first judging criterion (smart contract quality) | Contract design in 5 lines (no admin, decaying authority, renewal floor, asymmetric deleverage, liquidation) · tests: 41 passing, 3 invariants, mutation-checked · adversarial review: what was fixed, what is disclosed · trust assumptions (World ID backend signer, simulator on this deployment, mocks) · verified contracts with explorer links · the testnet transaction table from the README · mainnet integration targets | Should |
+| — | `/agent` Agent decision log | Optional: the full log with Jev probabilities per decision, filtered by source (JEV/GUARD/MANDATE/RULES) | Could, fold into `/app` if time is short |
+
+Navigation: wordmark → `/`; header links **Demo · App · Security** and the GitHub link; the account sits on `/app` and `/demo`.
+
+Compatibility: `/?demo=1` must redirect to `/demo`, because the video, README and SUBMISSION point at it, and the rehearsal driver opens it.
+
+**For the mockup, start with `/demo`** (the video and the live judge path both run on it), then `/`, then `/app`. `/security` is mostly text and tables, so it needs the least design work.
