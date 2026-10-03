@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Ships backend/agent source + deployments to the VPS, rebuilds the image, restarts the backend.
-# Running agent containers are recreated on the new image too (only if they are already running).
+# Agent containers are recreated on the new image only if they are already running; a stopped
+# agent stays stopped (`compose ps --services` lists every service, so check by container name).
 source "$(dirname "$0")/common.sh"
 cd "$REPO"
 ssh_vps "mkdir -p $REMOTE/src $REMOTE/web/html $REMOTE/data && chown 1000:1000 $REMOTE/data"
@@ -12,6 +13,6 @@ rsync_vps --delete --relative \
   deployments deploy/Dockerfile "$VPS:$REMOTE/src/"
 rsync_vps deploy/docker-compose.yml deploy/nginx.conf "$VPS:$REMOTE/"
 ssh_vps "cd $REMOTE && mv -f nginx.conf web/nginx.conf && docker compose build backend && docker compose up -d web backend \
-  && running=\$(docker compose --profile agents ps --status running --services | grep -vE '^(web|backend)\$' || true) \
+  && running=\$(for s in loop liquidator keeper; do docker ps -q --filter name=^releash-\$s\$ --filter status=running | grep -q . && echo \$s || true; done) \
   && if [ -n \"\$running\" ]; then docker compose --profile agents up -d --no-deps \$running; fi \
   && docker compose ps"

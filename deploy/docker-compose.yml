@@ -11,8 +11,8 @@ x-node: &node
 
 x-shared-env: &shared-env
   CHAIN_ID: "46630"
-  AGENT_LOG: /data/log.jsonl
-  MARKET_FILE: /data/market.json
+  AGENT_LOG: /data/log.46630.jsonl
+  MARKET_FILE: /data/market.46630.json
   DB_PATH: /data/releash-46630.db
 
 services:
