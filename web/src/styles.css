@@ -448,7 +448,7 @@ section.feed { padding: 24px 28px 18px; display: flex; flex-direction: column; }
 .demo .powers { margin-top: 10px; }
 .demo .power { padding: 12px 0; }
 .demo .figures { margin-top: 4px; }
-.demo .ceiling { margin-top: 8px; }
+.demo .ceiling { margin-top: 30px; }
 .demo .actions-row { margin-top: 10px; }
 .demo section.authority { padding: 20px 30px 18px; }
 .demo section.feed { padding: 20px 28px 16px; }
@@ -480,3 +480,7 @@ section.feed { padding: 24px 28px 18px; display: flex; flex-direction: column; }
 .hero h1 { font-size: clamp(44px, 5.3vw, 80px); }
 @media (min-width: 721px) { .hero h1 span { white-space: nowrap; } }
 @media (max-width: 1240px) { .hero { grid-template-columns: 1fr; } }
+.demo .power { padding: 10px 0; }
+.demo .figures .mid { font-size: 32px; }
+.demo .pagehead p.sub { margin-top: 2px; }
+.demo .txline { margin-top: 0; }

@@ -24,12 +24,12 @@ function Row({ it, pinned, full }: { it: Item & { count?: number }; pinned: bool
   const [tone, icon] = ICON[it.kind] ?? ["grey", <Doc />];
   const muted = it.kind === "hold" || it.kind === "skipped";
   return (
-    <li className={`feed__item${muted ? " feed__item--muted" : ""}`} data-testid={pinned ? "feed-pinned" : undefined} title={it.raw}>
+    <li className={`feed__item${muted ? " feed__item--muted" : ""}`} data-testid={pinned ? "feed-pinned" : undefined} title={[it.effect, it.raw].filter(Boolean).join(" — ")}>
       <span className={`feed__icon feed__icon--${tone}`}>{icon}</span>
       <div>
         <div className="feed__title num">{it.title}{it.count && it.count > 1 ? <span className="muted"> ×{it.count}</span> : null}</div>
         {it.detail && <p className="feed__detail">{it.detail}</p>}
-        {it.effect && <p className="feed__effect num">{it.effect}</p>}
+        {it.effect && full && <p className="feed__effect num">{it.effect}</p>}
         {full && it.raw && /Jev:/.test(it.raw) && <p className="feed__raw num">{it.raw.slice(it.raw.indexOf("Jev:")).replace(/\s*Not sent:.*$/, "")}</p>}
         <div className="feed__meta">
           <span><span className="src">{it.source}</span> · <time className="num">{fmtClock(it.ts)}</time></span>
