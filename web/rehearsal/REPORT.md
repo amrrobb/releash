@@ -66,3 +66,12 @@ The delta column shows no number until the control has a `Liquidated` event afte
 reads "Same stock, same market — watch Monday" (`06-friday-close.png`). After the gap it reads "Releash kept
 $1,907.62 more equity" (`07-monday-gap-35.png`: Alice 86.55 × 116.71 − 5,543.02 = $4,558.62; control $2,651.00, lost
 39.59 rNVDA). The driver now asserts both states. The demo was reset at the end: Alice debt 8,000, price 180.
+
+## Redesign rehearsal (4 Oct 2026, 02:05–02:15 JST, hosted /demo after the light redesign)
+`BEATS=1,2,3,4,5,6,7,8`, then `BEATS=9`. All beats pass with UI and on-chain checks:
+reset 19 s · renew 7.5 s (meter $9,270.89) · lever-up 1.6 s (debt 8,820) · blocked `AuthorityExceeded(10320000000, 9025000000)`
+7.7 s · decay 61 s ($8,759.00 → $6,357.80; chain 8,747.9 → 6,372.9) · Friday close 9.6 s (MANDATE-free run: Jev 30%, debt 8,820 → 6,174)
+· Monday gap 69 s (control LIQUIDATED, Alice SAFE, "Releash kept $1,534.10 more equity") · revoke 21 s (agent still deleveraged,
+debt 5,000.94 → 3,500.66) · final reset: first attempt failed in the backend ("borrow reverted": control re-borrow at 8,800 hit the
+LTV limit while the price was still ~$122), second attempt passed in 43 s (Alice debt 8,000, price 180).
+Post-gap /demo measured at 1920x1080: page bottom 1,044 px, no scrolling. `contract-check.mjs` ALL OK after every deploy.

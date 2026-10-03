@@ -8,7 +8,7 @@ import { CONTROL_OWNER, DEMO_KEY, EXPLORER } from "../config";
 import { authorityOf } from "../lib/authority";
 import { api, useMarket } from "../lib/backend";
 import { demoAccount, demoWallet } from "../lib/chain";
-import { fmtNum, fmtPct, fmtUsd, short, usd } from "../lib/math";
+import { fmtPct, fmtUsd, short, usd } from "../lib/math";
 import { hasAgent, useEvents, useVault, type VaultState } from "../lib/reads";
 import { useChainNow } from "../lib/useNow";
 
@@ -61,7 +61,7 @@ function Side({ title, tag, owner, state, events }: { title: string; tag: "relea
       <div className="big num" data-testid={`equity-${tag}`}>{equity === undefined ? "—" : fmtUsd(equity)}</div>
       <div className="cap">Equity remaining</div>
       {lost > 0 ? (
-        <p className="compare__lost num" data-testid={`lost-${tag}`}>{fmtNum(lost)} rNVDA lost to liquidation</p>
+        <p className="compare__lost num" data-testid={`lost-${tag}`}>{lost.toFixed(2)} rNVDA lost to liquidation</p>
       ) : (
         <div className="compare__foot num">
           <span>Debt<strong>{state ? fmtUsd(usd(state.position.debt)) : "—"}</strong></span>
