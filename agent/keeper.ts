@@ -3,11 +3,12 @@
  *   tsx keeper.ts close       Friday close: price frozen, market WEEKEND
  *   tsx keeper.ts gap -35     Monday open: price -35%, pool moved, market OPEN
  *   tsx keeper.ts tick        while OPEN, bounded mean-reverting walk around the anchor every 120 s (TICK_MS)
+ *   tsx keeper.ts inventory -35  pre-mint rNVDA so a gap is a single swap (idle, once)
  *   tsx keeper.ts status
  */
 import { key, wallet, fmt } from "./src/chain.js";
 import { isMain } from "./src/main.js";
-import { chainNow, keeperPaused, nextPrice, oraclePrice, poolPrice, readMarket, rebalancePool, setOracle, writeMarket } from "./src/market.js";
+import { chainNow, stockInventoryFor, keeperPaused, nextPrice, oraclePrice, poolPrice, readMarket, rebalancePool, setOracle, writeMarket } from "./src/market.js";
 
 const keeper = wallet(key("KEEPER_PK"));
 
@@ -82,6 +83,7 @@ async function main() {
   else if (cmd === "close") console.log("Friday close", await close());
   else if (cmd === "gap") console.log("Monday gap", await gap(Number(arg)));
   else if (cmd === "tick") await tick();
+  else if (cmd === "inventory") console.log(await stockInventoryFor(keeper, Number(arg ?? -35)));
   else if (cmd === "status") {
     const { price8, updatedAt } = await oraclePrice();
     console.log({ market: readMarket(), oracle: fmt(price8, 8), updatedAt: Number(updatedAt), pool: await poolPrice() });

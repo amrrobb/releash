@@ -73,31 +73,62 @@ async function poolReserves() {
 const STOCK_CAP = 1000n * 10n ** 18n;
 const USD_CAP = 100_000n * 10n ** 6n;
 
-/** Moves the pool's spot price to `priceUsd` by minting one side straight into the pool and syncing
- * (the mocks' mint is an open demo faucet). Mints are capped per call, so loop. */
+function sqrt(n: bigint) {
+  if (n < 2n) return n;
+  let x = BigInt(Math.floor(Math.sqrt(Number(n))));
+  for (let i = 0; i < 6; i++) x = (x + n / x) >> 1n;
+  while (x * x > n) x--;
+  while ((x + 1n) * (x + 1n) <= n) x++;
+  return x;
+}
+
+/** Moves the pool's spot price to `priceUsd` by SWAPPING the keeper's own inventory into it (constant
+ * product, so the pool does not grow). The old mint-into-pool + sync grew the reserves every gap/reset
+ * cycle (~1000x after a day of demos), and each reset needed hundreds of capped mints. Swaps return the
+ * other token to the keeper, so the next move back is paid from inventory; only a shortfall is minted. */
 export async function rebalancePool(keeper: Wallet, priceUsd: number) {
   const { rStock, rUsd } = await poolReserves();
   const p6 = BigInt(Math.round(priceUsd * 1e6)); // USDG (6 dec) per 1e18 rNVDA
-  const target = (rStock * p6) / 10n ** 18n; // USDG reserve that would put the pool at the price
-  let token: Address, abi, need: bigint, cap: bigint;
-  if (rUsd > target) {
-    // pool too expensive: add rNVDA until rUsd / rStock = price
-    need = (rUsd * 10n ** 18n) / p6 - rStock;
+  const k = rStock * rUsd;
+  let token: Address, abi: any, amountIn: bigint, cap: bigint;
+  if (rUsd * 10n ** 18n > rStock * p6) {
+    // too expensive: sell rNVDA into the pool
+    const target = sqrt((k * 10n ** 18n) / p6);
+    amountIn = ((target - rStock) * 10_000n) / 9_970n;
     token = dep.rnvda; abi = stockAbi; cap = STOCK_CAP;
   } else {
-    need = target - rUsd;
+    const target = sqrt((k * p6) / 10n ** 18n);
+    amountIn = ((target - rUsd) * 10_000n) / 9_970n;
     token = dep.usdg; abi = usdgAbi; cap = USD_CAP;
   }
-  if (need > 0n) {
-    let left = need;
-    while (left > 0n) {
-      const amt = left > cap ? cap : left;
-      await send(keeper, token, abi, "mint", [dep.pool, amt]);
-      left -= amt;
-    }
-    await send(keeper, dep.pool, poolAbi, "sync", []);
+  // Within 0.1%: nothing to do.
+  if (amountIn <= 0n || (token === dep.rnvda ? amountIn * 1000n < rStock : amountIn * 1000n < rUsd)) return poolPrice();
+  const me = keeper.account.address;
+  const bal = (await pub.readContract({ address: token, abi, functionName: "balanceOf", args: [me] })) as bigint;
+  for (let left = amountIn > bal ? amountIn - bal : 0n; left > 0n; ) {
+    const amt = left > cap ? cap : left;
+    await send(keeper, token, abi, "mint", [me, amt]);
+    left -= amt;
   }
+  const allowance = (await pub.readContract({ address: token, abi, functionName: "allowance", args: [me, dep.pool] })) as bigint;
+  if (allowance < amountIn) await send(keeper, token, abi, "approve", [dep.pool, 2n ** 256n - 1n]);
+  await send(keeper, dep.pool, poolAbi, "swapExactIn", [token, amountIn, 0n, me]);
   return poolPrice();
+}
+
+/** Mints enough rNVDA to the keeper that a gap of `pct` can be paid from inventory (run once, idle). */
+export async function stockInventoryFor(keeper: Wallet, pct: number) {
+  const { rStock } = await poolReserves();
+  const need = (rStock * BigInt(Math.round((Math.sqrt(1 / (1 + pct / 100)) - 1) * 1e6))) / 1_000_000n + rStock / 100n;
+  const me = keeper.account.address;
+  const bal = (await pub.readContract({ address: dep.rnvda, abi: stockAbi, functionName: "balanceOf", args: [me] })) as bigint;
+  let minted = 0;
+  for (let left = need > bal ? need - bal : 0n; left > 0n; minted++) {
+    const amt = left > STOCK_CAP ? STOCK_CAP : left;
+    await send(keeper, dep.rnvda, stockAbi, "mint", [me, amt]);
+    left -= amt;
+  }
+  return { need: Number(need) / 1e18, had: Number(bal) / 1e18, mintTxs: minted };
 }
 
 export async function chainNow() {
