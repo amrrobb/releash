@@ -21,6 +21,8 @@ export type VaultState = {
   allowUsdg: bigint;
   allowStock: bigint;
   vaultLiquidity: bigint;
+  /** Read from the vault (immutable), not the deployment JSON, so the meter can never drift from the contract. */
+  halfLife: number;
 };
 
 const ZERO = "0x0000000000000000000000000000000000000000" as Address;
@@ -35,7 +37,7 @@ async function readVault(owner: Address): Promise<VaultState> {
   const r = <T,>(address: Address, abi: typeof ABI.vault, functionName: string, args: unknown[] = []) =>
     publicClient.readContract({ address, abi, functionName, args, ...at }) as Promise<T>;
 
-  const [pos, man, auth, price, health, walletUsdg, walletStock, allowUsdg, allowStock, vaultLiquidity] = await Promise.all([
+  const [pos, man, auth, price, health, walletUsdg, walletStock, allowUsdg, allowStock, vaultLiquidity, halfLife] = await Promise.all([
     r<readonly [bigint, bigint]>(V.address, V.abi, "positions", [owner]),
     r<readonly [Address, bigint, bigint, boolean]>(V.address, V.abi, "mandates", [owner]),
     r<bigint>(V.address, V.abi, "authorityNow", [owner]),
@@ -46,6 +48,7 @@ async function readVault(owner: Address): Promise<VaultState> {
     r<bigint>(DEPLOYMENT.usdg, ABI.usdg, "allowance", [owner, DEPLOYMENT.vault]),
     r<bigint>(DEPLOYMENT.rnvda, ABI.stock, "allowance", [owner, DEPLOYMENT.vault]),
     r<bigint>(DEPLOYMENT.usdg, ABI.usdg, "balanceOf", [DEPLOYMENT.vault]),
+    r<bigint>(V.address, V.abi, "halfLife"),
   ]);
 
   const ltv = health[2];
@@ -65,6 +68,7 @@ async function readVault(owner: Address): Promise<VaultState> {
     allowUsdg,
     allowStock,
     vaultLiquidity,
+    halfLife: Number(halfLife),
   };
 }
 

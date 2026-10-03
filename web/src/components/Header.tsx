@@ -18,9 +18,10 @@ export function Wordmark() {
   );
 }
 
-function fmtFrozen(ts: number) {
-  const d = new Date(ts * 1000);
-  return `${d.toLocaleDateString("en-US", { weekday: "short" })} ${d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}`;
+/** The keeper's close is a demo stand-in for the Friday 16:00 ET close: show the nominal close plus
+ * how long the price has really been frozen (chain time), not the demo's wall-clock weekday. */
+function frozenText(since: number | undefined, now: number) {
+  return `since Fri 16:00${since ? ` (${fmtAgo(now - since).replace(" ago", "")})` : ""}`;
 }
 
 export function MarketBadge({ state }: { state?: VaultState }) {
@@ -47,7 +48,7 @@ export function MarketBadge({ state }: { state?: VaultState }) {
       <span className="market__detail num">
         {m.open
           ? `rNVDA ${price ?? ""}`
-          : `price frozen${m.frozenSince ? ` since ${fmtFrozen(m.frozenSince)}` : ""}${price ? ` at ${price}` : ""}`}
+          : `price frozen ${frozenText(m.frozenSince, now)}${price ? ` at ${price}` : ""}`}
       </span>
     </div>
   );

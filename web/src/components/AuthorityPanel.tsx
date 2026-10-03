@@ -9,12 +9,12 @@ import { RenewWorldId } from "./RenewWorldId";
 import { TxStatus } from "./TxStatus";
 
 const V = { address: DEPLOYMENT.vault, abi: ABI.vault };
-const HALF_LIFE = DEPLOYMENT.halfLife;
 
 type Phase = "none" | "unrenewed" | "revoked" | "decayed" | "live";
 
 export function AuthorityPanel({ owner, state }: { owner?: Address; state?: VaultState }) {
   const now = useChainNow();
+  const HALF_LIFE = state?.halfLife ?? DEPLOYMENT.halfLife;
   const m = state?.mandate;
   const base = m ? usd(m.authorityBase) : 0;
   const debt = state ? usd(state.position.debt) : 0;

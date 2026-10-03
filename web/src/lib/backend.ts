@@ -90,7 +90,9 @@ export type AgentEntry = {
 };
 
 function normalizeEntry(e: Record<string, unknown>, i: number): AgentEntry {
-  const tsRaw = e.ts ?? e.time ?? e.timestamp ?? e.at;
+  // Prefer the chain time the agent observed: wall-clock ts disagrees with block time after a warp.
+  const chainTs = (e.state as Record<string, unknown> | undefined)?.chainTs;
+  const tsRaw = chainTs !== undefined && chainTs !== null && chainTs !== "" ? Number(chainTs) : (e.ts ?? e.time ?? e.timestamp ?? e.at);
   let ts = typeof tsRaw === "number" ? tsRaw : Date.parse(String(tsRaw)) / 1000;
   if (ts > 1e12) ts /= 1000;
   if (!Number.isFinite(ts)) ts = 0;

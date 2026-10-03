@@ -26,7 +26,17 @@ export function RenewWorldId({ owner, agent, disabled }: { owner?: Address; agen
       // renew() reverts RenewalNotNewer when a revoke, fire or agent change landed in the same second
       // (renewalFloor moved). One fresh signature from the backend usually clears it.
       for (let i = 0; i < 2; i++) {
-        const out = await api<RenewalResponse>("/api/renew", { owner, agent, idkitResult });
+        let out: RenewalResponse;
+        try {
+          out = await api<RenewalResponse>("/api/renew", { owner, agent, idkitResult });
+        } catch (e) {
+          // A second request can fail on the proof's single-use nonce: that is still "superseded".
+          if (i === 1) {
+            tx.setError({ name: "RenewalNotNewer", message: "Renewal superseded — try again." });
+            break;
+          }
+          throw e;
+        }
         setStage("Submitting renewal…");
         const r = out.renewal;
         const fail = await tx.attempt("renew", [
