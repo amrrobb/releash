@@ -1,6 +1,9 @@
 # Releash — PLAN (hour gates, JST)
 
-Now: Sat 3 Oct 12:30. Hard stop for building: Sun 4 Oct 11:00. Submit by 15:00.
+Now: Sat 3 Oct 12:30. Hard stop for building: Sun 4 Oct 11:00. Submit by 15:00 JST.
+HackQuest close is actually 2026-10-04T15:59Z = Mon 5 Oct 00:59 JST (docs/RESEARCH.md §4). The ~10 h slack is a buffer, not a plan.
+
+Status: G1 done Sat 12:30 (37 tests, invariants mutation-checked). G2 blocked on a human: fund deployer 0x6319d8d5737F93365b7F1922ceAeAfF4704C0e23 at https://faucet.testnet.chain.robinhood.com/ (browser only).
 
 | Gate | By | Done when | If missed |
 | --- | --- | --- | --- |
