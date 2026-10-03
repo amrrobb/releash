@@ -171,7 +171,7 @@ export const Weekend: React.FC = () => {
                 <div style={{ fontSize: 34, color: C.muted, marginTop: 22, lineHeight: 1.4 }}>{d.body}</div>
                 {last && (
                   <div style={{ marginTop: 34, display: "inline-block", fontSize: 28, fontWeight: 800, letterSpacing: "0.1em", color: C.red, background: C.redSoft, border: `1px solid ${C.red}`, borderRadius: 999, padding: "8px 22px", opacity: appear(f, 4.3, 0.3) }}>
-                    LIQUIDATED
+                    FIRE SALE
                   </div>
                 )}
               </div>
@@ -253,7 +253,7 @@ export const Closing: React.FC = () => {
         <div style={{ opacity: appear(f, 0, 0.5) }}><Logo size={120} /></div>
         <div style={{ fontSize: 40, color: C.muted, opacity: appear(f, 0.4, 0.5) }}>Auto-deleverage for stock-backed loans</div>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 18, marginTop: 10, opacity: appear(f, 0.9, 0.5) }}>
-          <div style={{ fontFamily: MONO, fontSize: 48, color: C.green }}>releash.robbyn.xyz</div>
+          <div style={{ fontFamily: MONO, fontSize: 48, color: C.green }}>https://releash.robbyn.xyz/demo</div>
           <div style={{ fontFamily: MONO, fontSize: 40, color: C.text }}>github.com/amrrobb/releash</div>
         </div>
         <div style={{ marginTop: 26, fontSize: 32, fontWeight: 600, color: C.muted, opacity: appear(f, 1.4, 0.5) }}>

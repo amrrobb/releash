@@ -1,0 +1,14 @@
+{
+  "comment": "Facts read off take 4's sliced footage by extracting frames (ffmpeg), for claims the driver's text scrape could not see.",
+  "leverJev": {
+    "clip": "lever.mp4",
+    "visibleFrom": 5.0,
+    "chip": "JEV · borrow more 64%",
+    "checked": "frames at 2,3,4 s show 'ON-CHAIN · 04:14'; 5 and 6 s show 'Within the active debt ceiling. JEV borrow more 64% · 04:14'"
+  },
+  "gapDelta": {
+    "clip": "gap.mp4",
+    "values": { "12": "$1,336.91", "13": "$1,336.91", "15": "$1,336.91", "17": "$1,336.91", "21": "$1,336.91" },
+    "use": "caption quotes $1,336.91 exactly; also visible on every frame: $4,016.91 vs $2,680.00, 39.49 rNVDA lost to liquidation"
+  }
+}

@@ -41,7 +41,7 @@ const match = (s: string, re: RegExp, what: string) => {
   return m[1];
 };
 
-// ── numbers read from the take (take 3, redesigned /demo at web 6f05fed)
+// ── numbers read from the take (take 4, redesigned /demo at web 6f05fed)
 const ev = (c: Clip, k: string) => {
   const v = c.events[k];
   if (typeof v !== "number") throw new Error(`clip ${c.file} has no event "${k}"`);
@@ -57,7 +57,9 @@ const gap = need("gap");
 const deltaNow = Number(match(str(gap, "delta"), /\$([\d,.]+)/, "the equity delta").replace(/,/g, ""));
 const deltaShown = Object.values(notes.gapDelta.values).map((v) => Number(String(v).replace(/[$,]/g, "")));
 const deltaFloor = Math.floor(Math.min(deltaNow, ...deltaShown) / 100) * 100;
-const lost = Number(match(str(gap, "lostControl"), /([\d.]+) rNVDA/, "collateral lost")).toFixed(1);
+const lost = match(str(gap, "lostControl"), /([\d.]+) rNVDA/, "collateral lost");
+const deltaExact = match(str(gap, "delta"), /\$([\d,.]+)/, "the equity delta");
+if (!Object.values(notes.gapDelta.values).every((v) => v === `$${deltaExact}`)) throw new Error("the delta moved during the gap clip");
 const revoke = need("revoke");
 // The post-revoke trim is optional in the take (it depends on the LTV after the gap); say it only if it happened.
 const trimmed = typeof revoke.events.trim === "number";
@@ -78,7 +80,7 @@ const PAGE = box(250, 30, 1420); // the content column
 const CARDS = box(262, 150, 1396); // scenario bar, the two positions and the delta
 const AGENT = box(250, 560, 920); // "What your agent can do": reduce debt, add debt, ceiling, Renew / Revoke
 const ACTIVITY = box(1100, 470, 580); // the activity rows
-const RESULT = box(820, 196, 860); // the scenario result line and the top activity rows
+const RESULT = box(760, 205, 1000); // the scenario result line and the top activity rows, kept above the caption band
 const DELTA = box(740, 262, 920); // Without Releash + Releash kept
 const LIVE = "Live · releash.robbyn.xyz/demo · Robinhood Chain testnet";
 
@@ -86,7 +88,9 @@ const rClick = ev(renew, "click");
 const leverAt = 3.6 + (renew.dur - (rClick - 0.6)); // shot second the lever clip starts
 const closeA = 5.0, closeB = ev(close, "effect") - 3.2;
 const gapA = 3.0, gapB = ev(gap, "gapped") - 1.2;
-const revA = 3.2, revB = trimmed ? ev(revoke, "trim") - 1.2 : ev(revoke, "revoked") + 1.0, revBLen = trimmed ? 4.2 : 3.0;
+const revA = 3.2, revB = trimmed ? ev(revoke, "trim") + 0.4 : ev(revoke, "revoked") + 1.0, revBLen = trimmed ? 6.0 : 3.0;
+// The post-revoke attempt joins 1.5 s after its click (the press itself is off-camera; the chip says time passed).
+const raLead = 1.5, raFx = ev(revoked, "effect") - ev(revoked, "click") - raLead;
 
 export const SHOTS: Shot[] = [
   { id: "cold", kind: "card", card: "ColdOpen", min: 8, cues: ["This is the Chainlink NVDA price feed on Robinhood Chain mainnet.", "Stock feeds run 24/5."] },
@@ -103,7 +107,7 @@ export const SHOTS: Shot[] = [
   {
     id: "intro", kind: "footage", clip: "intro", live: LIVE,
     parts: [{ from: 0, cam: [FULL, CARDS], camAt: [0.4, 1.9] }],
-    cues: ["With Releash: Alice, whose agent watches her loan.", "Without Releash: the same 100 NVDA, and no agent."],
+    cues: ["With Releash: Alice, whose agent watches her loan.", "Without Releash: same stock, same market, and no agent."],
   },
   {
     id: "renew", kind: "footage", clip: "renew", live: LIVE,
@@ -115,11 +119,9 @@ export const SHOTS: Shot[] = [
     ],
     cues: [
       "Add debt: the agent may lever Alice up to 9,500 USDG,",
-      "but only after World ID proves a human is present.",
-      "Here World ID runs in simulator mode.",
-      { text: `Within seconds the agent borrows $${borrowed}.`, at: leverAt + ev(lever, "effect") - 0.2 },
-      ...(jevOnLever ? [`The JEV chip is Jev, TypeSafe's decision model, choosing from the contract's fixed menu.`] : []),
-      "The USDG goes to Alice, never the agent.",
+      "but only after World ID, simulated here, proves a human is present.",
+      { text: `Within seconds the agent borrows $${borrowed}.`, at: leverAt + ev(lever, "effect") + 0.1 },
+      ...(jevOnLever ? [{ text: `The JEV chip: Jev's model picked this from the contract's fixed menu.`, at: leverAt + notes.leverJev.visibleFrom + 0.2 }] : []),
     ],
   },
   {
@@ -133,7 +135,7 @@ export const SHOTS: Shot[] = [
       { from: 0, len: 4.5, cam: AGENT },
       { from: 62, skip: "60 s later", cam: AGENT },
     ],
-    cues: ["Alice goes offline.", "Every two minutes here, daily in production, the ceiling halves.", "Nothing expires. Reduce debt stays always allowed."],
+    cues: ["Alice goes offline.", "Every two minutes here, daily in production, the ceiling halves.", "Add debt decays. Reduce debt stays Always allowed."],
   },
   {
     id: "close", kind: "footage", clip: "close", live: LIVE,
@@ -145,20 +147,19 @@ export const SHOTS: Shot[] = [
       "Friday close: the price freezes.",
       "Alice's mandate caps her weekend LTV, and its rules can override the model.",
       { text: `So the agent repays ${closePct}% of the debt by selling collateral.`, at: closeA + 3.1 },
-      "Reducing debt needs no permission.",
     ],
   },
   {
     id: "gap", kind: "footage", clip: "gap", live: LIVE, hold: 2,
     parts: [
       { from: ev(gap, "click") - 1.0, len: gapA, cam: CARDS },
-      { from: gapB, skip: `${Math.round(gapB - (ev(gap, "click") - 1.0 + gapA))} s later`, cam: [CARDS, DELTA], camAt: [ev(gap, "liquidated") - gapB + 4.2, ev(gap, "liquidated") - gapB + 5.6] },
+      { from: gapB, skip: `${Math.round(gapB - (ev(gap, "click") - 1.0 + gapA))} s later`, cam: [CARDS, DELTA], camAt: [ev(gap, "liquidated") - gapB + 7.4, ev(gap, "liquidated") - gapB + 8.7] },
     ],
     cues: [
       { text: "Monday opens 35% lower.", at: gapA + 1.0 },
       { text: `Without Releash is liquidated and loses ${lost} rNVDA.`, at: gapA + (ev(gap, "liquidated") - gapB) },
       "With Releash is still safe.",
-      `Same stock, same drop: Releash kept over $${deltaFloor.toLocaleString("en-US")} more equity.`,
+      `Same stock, same drop: Releash kept $${deltaExact} more equity.`,
     ],
   },
   {
@@ -166,14 +167,14 @@ export const SHOTS: Shot[] = [
     parts: [
       { from: ev(revoke, "click") - 1.0, len: revA, cam: AGENT },
       { from: revB, len: revBLen, ...(trimmed ? { skip: `${Math.round(revB - (ev(revoke, "click") - 1.0 + revA))} s later`, cam: ACTIVITY } : { cam: AGENT }) },
-      { src: "capture/revokedAttempt.mp4", from: ev(revoked, "click") - 1.0, skip: "a moment later", cam: [PAGE, RESULT], camAt: [ev(revoked, "effect") - ev(revoked, "click") + 0.4, ev(revoked, "effect") - ev(revoked, "click") + 1.6] },
+      { src: "capture/revokedAttempt.mp4", from: ev(revoked, "click") + raLead, skip: "a moment later", cam: [PAGE, RESULT], camAt: [raFx + 0.4, raFx + 1.6] },
     ],
     cues: [
       "Alice revokes the agent.",
       trimmed
-        ? guardOnRevoke ? `A fixed LTV guard still trims ${trimPct}%: reducing debt survives revoke.` : `It can still reduce debt, and trims another ${trimPct}%.`
-        : "Add debt is revoked. Reduce debt stays always allowed.",
-      { text: "But borrowing is blocked on-chain.", at: revA + revBLen + (ev(revoked, "effect") - ev(revoked, "click") + 1.0) },
+        ? { text: guardOnRevoke ? `A fixed LTV guard still trims ${trimPct}%: reducing debt survives revoke.` : `It can still reduce debt, and trims another ${trimPct}%.`, at: revA + 1.0 }
+        : "Add debt is revoked. Reduce debt stays Always allowed.",
+      { text: "But borrowing is blocked on-chain.", at: revA + revBLen + raFx + 1.0 },
       "Close always. Open only while you're alive.",
     ],
   },
@@ -181,15 +182,15 @@ export const SHOTS: Shot[] = [
     id: "security", kind: "footage", clip: "security",
     parts: [{ from: 0, cam: FULL }],
     min: Math.min(8.5, sec.dur),
-    cues: ["No owner, no admin, no upgrade path.", "All five contracts are verified on Blockscout."],
+    cues: ["No owner, no admin, no upgrade path.", { text: "All five contracts are verified on Blockscout.", at: 4.8 }],
   },
   {
     id: "contract", kind: "card", card: "Contract", min: 8,
-    cues: ["41 tests; invariants checked against deliberately broken contracts.", "An adversarial review's two signature-replay bugs are fixed, with regression tests."],
+    cues: ["41 tests; invariants checked against deliberately broken contracts.", "Two signature-replay bugs from a review are fixed, with tests."],
   },
   {
     id: "closing", kind: "card", card: "Closing", hold: 2.5,
-    cues: ["Built for lending venues to plug in as an auto-deleverage module.", "Production is a change of constructor arguments: Paxos USDG and the Chainlink NVDA feed."],
+    cues: ["Built for lending venues to plug in as an auto-deleverage module.", "Production swaps in Paxos USDG and the Chainlink NVDA feed."],
   },
 ];
 
