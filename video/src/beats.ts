@@ -146,7 +146,7 @@ export const SHOTS: Shot[] = [
     parts: [
       { from: 1.6, len: 2.8, cam: APP },
       { from: 24.2, len: 2.8, skip: "20 s later", cam: box(660, 50, 960) },
-      { src: "capture/revokedAttempt.mp4", from: 1.8, cam: [APP, box(780, 330, 860)], camAt: [3.4, 4.6] },
+      { src: "capture/revokedAttempt.mp4", from: 1.8, skip: "6 s later", cam: [APP, box(780, 330, 860)], camAt: [3.4, 4.6] },
     ],
     cues: [
       "Alice revokes the agent.",
@@ -161,7 +161,7 @@ export const SHOTS: Shot[] = [
   },
   {
     id: "closing", kind: "card", card: "Closing", hold: 2.5,
-    cues: ["Lending venues plug Releash in as an auto-deleverage module.", "Production is a change of constructor arguments: Paxos USDG and the Chainlink NVDA feed."],
+    cues: ["Built for lending venues to plug in as an auto-deleverage module.", "Production is a change of constructor arguments: Paxos USDG and the Chainlink NVDA feed."],
   },
 ];
 

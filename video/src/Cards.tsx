@@ -84,6 +84,13 @@ export const ColdOpen: React.FC = () => {
             <div style={{ color: C.muted, fontSize: 24, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" }}>Market hours</div>
             <div style={{ fontFamily: MONO }}>24/5</div>
           </div>
+          {/* Only once the silence really exceeds the feed's own 24 h heartbeat (re-read with `npm run feed`). */}
+          {feed.ageHours > 24 && (
+            <div>
+              <div style={{ color: C.muted, fontSize: 24, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" }}>Silent for</div>
+              <div style={{ fontFamily: MONO, color: C.red }}>{feed.ageHours} h · past its 24 h heartbeat</div>
+            </div>
+          )}
         </div>
       </AbsoluteFill>
     </Bg>
