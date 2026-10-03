@@ -26,14 +26,16 @@ When you disappear, your position can only get safer. That is the property no ot
 
 The agent's brain is **Jev** (TypeSafe's decision model, via OpenRouter `/api/alpha/decisions`), asked to choose among exactly the contract's actions: `hold`, `deleverage_10`, `deleverage_30`, `borrow_more`. Claude (Haiku 4.5) is the fallback when Jev is unsure. A deterministic LTV guard runs before either model, and **the contract is the last guard**: whatever the model says, an out-of-authority borrow reverts on-chain.
 
-## Demo result (on-chain, same start, same −35% Monday gap)
+## Demo result (−35% Monday gap)
+
+Foundry e2e (`test/Releash.e2e.t.sol`): both positions hold 100 rNVDA at $180 and reach 8,800 USDG of debt, one through the Releash agent, one by hand.
 
 | | Control (no agent) | Releash |
 | --- | --- | --- |
-| Start | 100 rNVDA @ $180, 8,800 USDG debt | 100 rNVDA @ $180, 8,000 USDG debt + agent |
 | Friday | nothing | agent deleverages 30% before the close |
-| Monday −35% | LTV 75.2% → **liquidated** | LTV 62.1% → survives (agent trims to 59.7%) |
-| Equity after | ~$2.7k | ~$3.7k |
+| Monday −35% | LTV 75.2% → **liquidated** | survives |
+| Collateral left | 60.5 rNVDA | 79.1 rNVDA |
+| Equity at the Monday price | $2,680 | $3,712 |
 
 Testnet run (real time, half-life 120 s; authority 9,000 → 4,256 at 133 s → 2,100 at 256 s → 0 at 378 s):
 
