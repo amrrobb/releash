@@ -3,7 +3,7 @@
 **Auto-deleverage for stock-backed loans on Robinhood Chain.**
 Your agent can always make the loan safer. It can only add debt while you keep proving, with World ID, that you are still there.
 
-- Live app: https://releash.robbyn.xyz (add `?demo=1` for the side-by-side demo strip) · API: https://releash-api.robbyn.xyz/api/health
+- Live app: https://releash.robbyn.xyz · judge demo: https://releash.robbyn.xyz/demo · security: https://releash.robbyn.xyz/security · API: https://releash-api.robbyn.xyz/api/health
 - Repo: https://github.com/amrrobb/releash
 - Demo video: _n_
 - Network: Robinhood Chain testnet (46630). All contracts verified on Blockscout.
@@ -112,7 +112,7 @@ forge test                                   # contracts
 script/deploy.sh 31337                       # local anvil; 46630 needs --broadcast
 cd backend && npm i && WORLD_SIMULATE=1 npm start
 cd agent && npm i && npx tsx demo-setup.ts && WATCH=<alice>,<control> npx tsx loop.ts
-cd web && pnpm i && pnpm dev                 # ?demo=1 for the demo strip
+cd web && pnpm i && pnpm dev                 # /demo, /app, /security
 ```
 
 Node 22.13+ (built-in SQLite). Env examples in each package.

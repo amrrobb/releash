@@ -22,7 +22,7 @@ A borrower deposits rNVDA and borrows USDG. They hand an agent a **mandate**: "k
 - `MockUSDG` — ERC20, 6 decimals, name "Mock Paxos USDG", symbol "USDG". `mint(to, amt)` capped at 100,000e6 per call (open, demo faucet).
 - `MockStock` — ERC20, 18 decimals, "Mock Robinhood NVIDIA", "rNVDA". `mint(to, amt)` capped at 1,000e18 per call.
 - `MockPriceFeed` — Chainlink `AggregatorV3Interface` subset: `decimals()=8`, `latestRoundData()`, `description()`. `setPrice(int256)` keeper-only, bumps roundId and updatedAt. `setKeeper` owner-only.
-- `MockPool` — constant-product rNVDA/USDG, 0.3% fee. `swapExactIn(tokenIn, amountIn, minOut, to)`, `getAmountIn(tokenOut, amountOut)`, `getAmountOut(tokenIn, amountIn)`, `addLiquidity`, `reserves()`. Thin on purpose (demo: 50,000 USDG / ~278 rNVDA, a 30% deleverage of an 8,800 debt costs ~5% slippage) so slippage is visible.
+- `MockPool` — constant-product rNVDA/USDG, 0.3% fee. `swapExactIn(tokenIn, amountIn, minOut, to)`, `getAmountIn(tokenOut, amountOut)`, `getAmountOut(tokenIn, amountIn)`, `addLiquidity`, `reserves()`. Seeded thin (50,000 USDG / ~278 rNVDA). Note: the demo keeper later grew the hosted pool by minting into it (now far deeper), so on the hosted demo deleverage slippage is negligible; the contract-level slippage ceiling is still covered by `test_agentCannotDumpIntoManipulatedPool`.
 
 ### 3.2 `ReleashVault`
 
