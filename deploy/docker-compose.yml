@@ -39,6 +39,7 @@ services:
   backend:
     <<: *node
     container_name: releash-backend
+    restart: unless-stopped
     environment:
       <<: *shared-env
       PORT: "8787"
@@ -63,6 +64,7 @@ services:
     <<: *node
     container_name: releash-loop
     profiles: [agents]
+    restart: unless-stopped # explicit: survives docker/VPS restarts even if the anchor changes
     working_dir: /app/agent
     command: ["node_modules/.bin/tsx", "loop.ts"]
     environment: { <<: *shared-env }
@@ -71,6 +73,7 @@ services:
     <<: *node
     container_name: releash-liquidator
     profiles: [agents]
+    restart: unless-stopped # explicit: survives docker/VPS restarts even if the anchor changes
     working_dir: /app/agent
     command: ["node_modules/.bin/tsx", "liquidator.ts"]
     environment: { <<: *shared-env }
@@ -79,6 +82,7 @@ services:
     <<: *node
     container_name: releash-keeper
     profiles: [agents]
+    restart: unless-stopped # explicit: survives docker/VPS restarts even if the anchor changes
     working_dir: /app/agent
     command: ["node_modules/.bin/tsx", "keeper.ts", "tick"]
     environment: { <<: *shared-env }

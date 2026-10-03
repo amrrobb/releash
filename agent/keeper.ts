@@ -2,26 +2,26 @@
  *   tsx keeper.ts price 180   set price (and pool), market OPEN
  *   tsx keeper.ts close       Friday close: price frozen, market WEEKEND
  *   tsx keeper.ts gap -35     Monday open: price -35%, pool moved, market OPEN
- *   tsx keeper.ts tick        while OPEN, random walk +-0.5% every 15 s (TICK_MS)
+ *   tsx keeper.ts tick        while OPEN, bounded mean-reverting walk around the anchor every 120 s (TICK_MS)
  *   tsx keeper.ts status
  */
 import { key, wallet, fmt } from "./src/chain.js";
 import { isMain } from "./src/main.js";
-import { chainNow, oraclePrice, poolPrice, readMarket, rebalancePool, setOracle, writeMarket } from "./src/market.js";
+import { chainNow, nextPrice, oraclePrice, poolPrice, readMarket, rebalancePool, setOracle, writeMarket } from "./src/market.js";
 
 const keeper = wallet(key("KEEPER_PK"));
 
 export async function setPrice(priceUsd: number) {
   await setOracle(keeper, priceUsd);
   const pool = await rebalancePool(keeper, priceUsd);
-  writeMarket({ open: true, label: "OPEN", price: priceUsd });
+  writeMarket({ open: true, label: "OPEN", price: priceUsd, anchor: priceUsd });
   return { price: priceUsd, pool };
 }
 
 export async function close() {
   const { price8 } = await oraclePrice();
   const price = Number(price8) / 1e8;
-  writeMarket({ open: false, label: "WEEKEND", fridayCloseAt: await chainNow(), price });
+  writeMarket({ open: false, label: "WEEKEND", fridayCloseAt: await chainNow(), price, anchor: readMarket().anchor });
   return { price };
 }
 
@@ -34,7 +34,7 @@ export async function gap(pct: number) {
   // Agent deleverage reverts SlippageExceeded when the pool sits ~13% under the oracle.
   if (Math.abs(pool - after) / after > 0.1) console.error(`WARNING: pool ${pool.toFixed(2)} is more than 10% from the oracle ${after}; agent deleverage may revert SlippageExceeded`);
   const m = readMarket();
-  writeMarket({ open: true, label: "OPEN", fridayCloseAt: m.fridayCloseAt, mondayOpenAt: await chainNow(), price: after });
+  writeMarket({ open: true, label: "OPEN", fridayCloseAt: m.fridayCloseAt, mondayOpenAt: await chainNow(), price: after, anchor: after });
   return { before, after, pool };
 }
 
@@ -52,7 +52,8 @@ async function tick() {
       try {
         const { price8 } = await oraclePrice();
         const cur = Number(price8) / 1e8;
-        const p = Math.round(cur * (1 + (Math.random() - 0.5) * 0.01) * 100) / 100;
+        const anchor = m.anchor ?? Number(process.env.KEEPER_ANCHOR ?? 180);
+        const p = nextPrice(cur, anchor);
         if (Math.abs(p - cur) / cur < minMove) console.log(`${new Date().toISOString()} tick skipped (${cur} -> ${p} is under ${minMove * 100}%)`);
         else {
           await setOracle(keeper, p);

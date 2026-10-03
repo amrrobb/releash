@@ -4,7 +4,19 @@ import { AGENT_DIR, CHAIN_ID, LOCAL, dep, feedAbi, poolAbi, pub, send, stockAbi,
 
 export const MARKET_FILE = process.env.MARKET_FILE ?? `${AGENT_DIR}${LOCAL ? "market.json" : `market.${CHAIN_ID}.json`}`;
 
-export type Market = { open: boolean; label: "OPEN" | "WEEKEND"; fridayCloseAt?: number; mondayOpenAt?: number; price: number };
+/** anchor: the price the keeper's walk reverts to (set by `price`/reset and by a demo gap). */
+export type Market = { open: boolean; label: "OPEN" | "WEEKEND"; fridayCloseAt?: number; mondayOpenAt?: number; price: number; anchor?: number };
+
+/** Bounded, mean-reverting walk: pull 20% of the way back to the anchor, add up to +-0.5% noise,
+ * clamp to anchor +-5%. Unattended for days the price stays where the demo left it, so the agent
+ * never trims Alice to dust and the control is never liquidated without a button press. */
+export const WALK = { pull: 0.2, noise: 0.005, band: 0.05 };
+export function nextPrice(cur: number, anchor: number, rand = Math.random()) {
+  const target = cur + WALK.pull * (anchor - cur);
+  const p = target * (1 + (rand - 0.5) * 2 * WALK.noise);
+  const lo = anchor * (1 - WALK.band), hi = anchor * (1 + WALK.band);
+  return Math.round(Math.min(hi, Math.max(lo, p)) * 100) / 100;
+}
 
 export function readMarket(): Market {
   try {
