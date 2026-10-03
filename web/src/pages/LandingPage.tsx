@@ -62,7 +62,7 @@ export function LandingPage() {
         <section className="hero" aria-labelledby="hero-h">
           <div>
             <p className="eyebrow">Stock-backed loans · <b>Robinhood Chain</b></p>
-            <h1 id="hero-h">Step away.<br />Keep risk in check.</h1>
+            <h1 id="hero-h"><span>Step away.</span><br /><span>Keep risk in check.</span></h1>
             <p className="hero__lede">An agent that can always reduce your debt.<br />Permission to borrow more fades until you renew.</p>
             <div className="hero__cta">
               <Link to="/demo" className="btn btn--dark">Open live demo <ArrowUpRight /></Link>

@@ -476,3 +476,7 @@ section.feed { padding: 24px 28px 18px; display: flex; flex-direction: column; }
   .ltv__liq { flex-wrap: wrap; }
 }
 .verified { white-space: nowrap; }
+.hero { grid-template-columns: 1.22fr 1fr; }
+.hero h1 { font-size: clamp(44px, 5.3vw, 80px); }
+@media (min-width: 721px) { .hero h1 span { white-space: nowrap; } }
+@media (max-width: 1240px) { .hero { grid-template-columns: 1fr; } }
