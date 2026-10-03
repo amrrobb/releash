@@ -160,6 +160,20 @@ function MandateControls({ owner, state }: { owner?: Address; state?: VaultState
 
   return (
     <div className="mandate">
+      <div className="kill">
+        <div className="kill__row">
+          <button className="btn btn--outline" onClick={revoke} disabled={!current || m?.revoked || !!tx.pending} data-testid="revoke">
+            {tx.pending === "revoke" ? "Revoking…" : "Revoke"}
+          </button>
+          <span>Agent stops adding debt, instantly. It can still deleverage you.</span>
+        </div>
+        <div className="kill__row">
+          <button className="btn btn--danger" onClick={fire} disabled={!current || !!tx.pending} data-testid="fire">
+            {tx.pending === "fire" ? "Firing…" : "Fire"}
+          </button>
+          <span>Removes the agent entirely, including its right to deleverage.</span>
+        </div>
+      </div>
       <h3>Mandate</h3>
       <div className="mandate__grid">
         <label className="field field--stack">
@@ -179,20 +193,6 @@ function MandateControls({ owner, state }: { owner?: Address; state?: VaultState
         {current && <span className="quiet">Current: <span className="mono">{short(current)}</span></span>}
       </div>
 
-      <div className="kill">
-        <div className="kill__row">
-          <button className="btn btn--outline" onClick={revoke} disabled={!current || m?.revoked || !!tx.pending} data-testid="revoke">
-            {tx.pending === "revoke" ? "Revoking…" : "Revoke"}
-          </button>
-          <span>Agent stops adding debt, instantly. It can still deleverage you.</span>
-        </div>
-        <div className="kill__row">
-          <button className="btn btn--danger" onClick={fire} disabled={!current || !!tx.pending} data-testid="fire">
-            {tx.pending === "fire" ? "Firing…" : "Fire"}
-          </button>
-          <span>Removes the agent entirely, including its right to deleverage.</span>
-        </div>
-      </div>
       <TxStatus tx={tx} />
     </div>
   );

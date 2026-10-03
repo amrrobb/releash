@@ -195,7 +195,7 @@ main { max-width: 1320px; margin: 0 auto; padding: 0 24px 48px; }
 .mandate__grid { display: grid; grid-template-columns: 1.6fr 1fr; gap: 10px; }
 .mandate__buttons { display: flex; align-items: center; gap: 12px; margin-top: 12px; flex-wrap: wrap; font-size: 13px; }
 .warn { color: var(--amber); font-size: 13px; margin: 10px 0 0; }
-.kill { margin-top: 18px; display: grid; gap: 10px; }
+.kill { margin: 0 0 22px; display: grid; gap: 10px; }
 .kill__row { display: flex; align-items: center; gap: 14px; font-size: 13px; color: var(--muted); }
 
 /* ---------------------------------------------------------------- feed */
