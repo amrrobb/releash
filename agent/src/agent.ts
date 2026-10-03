@@ -165,7 +165,13 @@ async function askJev(s: State, m: MandateCfg, apiKey: string) {
   return { choice: String(a.choice), confidence: Number(a.confidence), probabilities: a.probabilities ?? {} };
 }
 
+const CLAUDE_MIN_INTERVAL_S = Number(process.env.CLAUDE_MIN_INTERVAL_S ?? 60);
+const lastClaude = new Map<string, number>();
 async function askClaude(s: State, m: MandateCfg, apiKey: string): Promise<Decision> {
+  const k = s.owner.toLowerCase();
+  const now = Date.now() / 1000;
+  if (now - (lastClaude.get(k) ?? 0) < CLAUDE_MIN_INTERVAL_S) throw new Error(`claude budget: at most one call per ${CLAUDE_MIN_INTERVAL_S}s per owner`);
+  lastClaude.set(k, now);
   const res = await fetch(`${OR}/v1/chat/completions`, {
     method: "POST",
     headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
@@ -245,7 +251,7 @@ export async function decide(s: State, opts: { useModel?: boolean } = {}): Promi
 
 // ------------------------------------------------------------------ acting
 
-export type Outcome = { txHash?: Hash; blocked?: boolean; error?: ReturnType<typeof decodeError>; result?: Record<string, unknown> };
+export type Outcome = { txHash?: Hash; blocked?: boolean; skipped?: string; retriedWith?: number; error?: ReturnType<typeof decodeError>; result?: Record<string, unknown> };
 
 function events(receipt: TransactionReceipt) {
   const out: Record<string, any> = {};
@@ -285,20 +291,40 @@ async function call(w: Wallet, functionName: string, args: unknown[], broadcastO
   }
 }
 
-export async function act(w: Wallet, owner: Address, d: Decision, s: State): Promise<Outcome> {
-  if (d.action === "hold") return {};
-  if (d.action === "borrow") {
-    if (!d.amount || d.amount <= 0n) return {};
-    return call(w, "agentBorrow", [owner, d.amount], true);
-  }
-  const bps = d.action === "deleverage30" ? 3000 : 1000;
+/** Self-imposed: at most one deleverage per owner every DELEVERAGE_COOLDOWN_S (chain time), so the
+ * agent's sells are not a predictable stream to sandwich. Disclosed in the README. */
+const DELEVERAGE_COOLDOWN_S = Number(process.env.DELEVERAGE_COOLDOWN_S ?? 20);
+const lastDeleverage = new Map<string, bigint>();
+
+async function deleverageCall(w: Wallet, owner: Address, bps: number): Promise<Outcome> {
   // Debt read at the latest block (the state may be a few seconds old).
   const [, debt] = (await pub.readContract({ address: dep.vault, abi: vaultAbi, functionName: "positions", args: [owner] })) as bigint[];
   const target = (debt * BigInt(bps)) / 10_000n;
   if (target === 0n) return {};
   const colIn = (await pub.readContract({ address: dep.pool, abi: poolAbi, functionName: "getAmountIn", args: [dep.usdg, target] })) as bigint;
   const maxIn = (colIn * 102n) / 100n;
-  return call(w, "deleverage", [owner, bps, maxIn], true);
+  return call(w, "deleverage", [owner, bps, maxIn], false);
+}
+
+export async function act(w: Wallet, owner: Address, d: Decision, s: State): Promise<Outcome> {
+  if (d.action === "hold") return {};
+  if (d.action === "borrow") {
+    if (!d.amount || d.amount <= 0n) return {};
+    return call(w, "agentBorrow", [owner, d.amount], true);
+  }
+  const k = owner.toLowerCase();
+  const last = lastDeleverage.get(k);
+  if (last !== undefined && s.chainTs - last < BigInt(DELEVERAGE_COOLDOWN_S))
+    return { skipped: `deleverage cooldown: last one ${s.chainTs - last}s ago, minimum ${DELEVERAGE_COOLDOWN_S}s` };
+  const bps = d.action === "deleverage30" ? 3000 : 1000;
+  let o = await deleverageCall(w, owner, bps);
+  if (o.blocked && o.error?.name === "SlippageExceeded" && bps === 3000) {
+    console.warn(`deleverage 30% for ${owner} refused: pool is too far below the oracle (SlippageExceeded ${o.error.args?.join(", ")}); is the keeper keeping the pool at the oracle? Retrying with 10%.`);
+    o = await deleverageCall(w, owner, 1000);
+    o.retriedWith = 1000;
+  }
+  if (!o.blocked && o.txHash) lastDeleverage.set(k, s.chainTs);
+  return o;
 }
 
 export function log(entry: Record<string, unknown>) {
@@ -340,7 +366,7 @@ export async function step(w: Wallet, owner: Address, opts: { decision?: Decisio
     state: summarize(s),
     action: d.action,
     amount: d.amount !== undefined ? usd(d.amount) : undefined,
-    reason: o.blocked ? `Blocked by Releash: ${o.error?.name}${o.error?.args ? `(${o.error.args.join(", ")})` : ""}. ${d.reason}` : d.reason,
+    reason: o.skipped ? `${d.reason} Not sent: ${o.skipped}.` : o.blocked ? `Blocked by Releash: ${o.error?.name}${o.error?.args ? `(${o.error.args.join(", ")})` : ""}. ${d.reason}` : d.reason,
     source: d.source,
     jev: d.jev,
     overridden: d.overridden,
@@ -348,6 +374,8 @@ export async function step(w: Wallet, owner: Address, opts: { decision?: Decisio
     blocked: o.blocked,
     error: o.error,
     result: o.result,
+    skipped: o.skipped,
+    retriedWith: o.retriedWith,
   };
   log(entry);
   return entry;

@@ -62,11 +62,23 @@ async function main() {
 
   console.log("== renew via backend (WORLD_SIMULATE)");
   const srv = await backend();
-  const res = await fetch(`${srv.url}/api/renew`, { method: "POST", body: JSON.stringify({ owner: A, agent: agent.account.address, idkitResult: { responses: [{ identifier: "proof_of_human", nullifier: `0xe2e${Date.now().toString(16)}` }] } }) });
-  const body: any = await res.json();
-  if (res.status !== 200) throw new Error(`renew ${res.status}: ${JSON.stringify(body)}`);
-  const r = { ...body.renewal, issuedAt: BigInt(body.renewal.issuedAt), deadline: BigInt(body.renewal.deadline) };
-  const rr = await send(alice, dep.vault, vaultAbi, "renew", [r, body.signature]);
+  const nullifier = `0xe2e${Date.now().toString(16)}`;
+  let rr: any, r: any;
+  // A revoke in the previous run raised renewalFloor to that second: a renewal signed in the same
+  // second is RenewalNotNewer, so ask again with a fresh one (what the web does too).
+  for (let attempt = 1; ; attempt++) {
+    const res = await fetch(`${srv.url}/api/renew`, { method: "POST", body: JSON.stringify({ owner: A, agent: agent.account.address, idkitResult: { responses: [{ identifier: "proof_of_human", nullifier }] } }) });
+    const body: any = await res.json();
+    if (res.status !== 200) throw new Error(`renew ${res.status}: ${JSON.stringify(body)}`);
+    r = { ...body.renewal, issuedAt: BigInt(body.renewal.issuedAt), deadline: BigInt(body.renewal.deadline) };
+    try {
+      rr = await send(alice, dep.vault, vaultAbi, "renew", [r, body.signature]);
+      break;
+    } catch (e) {
+      if (attempt >= 3 || !String((e as any).shortMessage ?? e).includes("RenewalNotNewer") && !JSON.stringify((e as any).cause?.data ?? "").includes("RenewalNotNewer")) throw e;
+      await new Promise((ok) => setTimeout(ok, 1200));
+    }
+  }
   const renewed = rr.logs.map((l) => { try { return decodeEventLog({ abi: vaultAbi, data: l.data, topics: l.topics }) as any; } catch { return null; } }).find((e) => e?.eventName === "Renewed");
   beat("World renew accepted on chain", renewed?.args.issuedAt === r.issuedAt, `Renewed.issuedAt ${renewed?.args.issuedAt} (tx ${rr.transactionHash.slice(0, 10)})`);
 
@@ -110,6 +122,7 @@ async function main() {
   const lc = liq.find((x) => x.owner === C);
   beat("liquidator liquidates control", !!lc, `repaid ${n6(lc?.debtRepaid)} USDG, seized ${n18(lc?.collateralSeized)} rNVDA; control now ${n18(ctlAfter.col)} rNVDA / ${n6(ctlAfter.debt)} USDG`);
   beat("Alice is not liquidated", !liq.find((x) => x.owner === A) && !(await health(A)).liq, `Alice LTV ${pct(al.ltv)} < 70%`);
+  await warp(21); // agent cooldown: one deleverage per 20 s per owner
   const e5: any = await step(agent, A, { useModel });
   const a5 = await health(A);
   beat("agent guard trims Alice after the gap", !!e5.result?.Deleveraged || e5.action === "hold", `${e5.action} [${e5.source}] -> LTV ${pct(a5.ltv)}`);
@@ -118,6 +131,7 @@ async function main() {
   await send(alice, dep.vault, vaultAbi, "revoke", []);
   const { price8 } = await oraclePrice();
   await rebalancePool(keeperW, Number(price8) / 1e8); // keep the pool at the oracle (agent slippage cap is 15%)
+  await warp(21);
   const e6: any = await step(agent, A, { decision: { action: "deleverage10", reason: "Demo: deleverage after revoke.", source: "manual" } });
   beat("after revoke: agent deleverage still works", !!e6.result?.Deleveraged, `repaid ${n6(e6.result?.Deleveraged?.debtRepaid)} USDG (tx ${e6.txHash?.slice(0, 10)})`);
   const e7: any = await step(agent, A, { decision: { action: "borrow", amount: 100_000000n, reason: "Demo: borrow after revoke.", source: "manual" } });

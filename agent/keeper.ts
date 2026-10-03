@@ -32,6 +32,8 @@ export async function gap(pct: number) {
   const after = Math.round(before * (1 + pct / 100) * 100) / 100;
   await setOracle(keeper, after);
   const pool = await rebalancePool(keeper, after);
+  // Agent deleverage reverts SlippageExceeded when the pool sits ~13% under the oracle.
+  if (Math.abs(pool - after) / after > 0.1) console.error(`WARNING: pool ${pool.toFixed(2)} is more than 10% from the oracle ${after}; agent deleverage may revert SlippageExceeded`);
   const m = readMarket();
   writeMarket({ open: true, label: "OPEN", fridayCloseAt: m.fridayCloseAt, mondayOpenAt: await chainNow(), price: after });
   return { before, after, pool };
@@ -45,7 +47,11 @@ async function tick() {
       const { price8 } = await oraclePrice();
       const p = Math.round((Number(price8) / 1e8) * (1 + (Math.random() - 0.5) * 0.01) * 100) / 100;
       try {
-        await setPrice(p);
+        await setOracle(keeper, p);
+        await rebalancePool(keeper, p);
+        // close() may have landed while those txs mined: only update the price, never reopen.
+        const now = readMarket();
+        if (now.open) writeMarket({ ...now, price: p });
         console.log(`${new Date().toISOString()} tick ${p}`);
       } catch (e) {
         console.error("tick failed:", (e as any).shortMessage ?? e, (e as any).details ?? "");

@@ -1,6 +1,6 @@
 /** Agent loop (SPEC §5): every LOOP_MS (10 s) per owner in WATCH: read, guard, decide, act, log. */
 import { getAddress, type Address } from "viem";
-import { key, wallet, CHAIN_ID } from "./src/chain.js";
+import { key, wallet, CHAIN_ID, pub, dep, vaultAbi } from "./src/chain.js";
 import { step, LOG_FILE } from "./src/agent.js";
 import { isMain } from "./src/main.js";
 
@@ -25,8 +25,29 @@ async function main() {
         console.error(`step ${owner} failed: ${err.shortMessage ?? err.message} | details: ${err.details ?? "-"}`);
       }
     }
-    await new Promise((r) => setTimeout(r, ms));
+    // Sleep in 1 s slices; a fresh World renewal wakes the loop at once, because authority decays
+    // from the moment of the proof (with a 60 s half-life the lever-up window is only seconds).
+    const until = Date.now() + ms;
+    while (Date.now() < until) {
+      await new Promise((r) => setTimeout(r, 1000));
+      if (await renewedSince(owners)) break;
+    }
   }
+}
+
+const seen = new Map<string, bigint>();
+async function renewedSince(owners: Address[]) {
+  let changed = false;
+  for (const o of owners) {
+    try {
+      const m = (await pub.readContract({ address: dep.vault, abi: vaultAbi, functionName: "mandates", args: [o] })) as any[];
+      const last = m[2] as bigint;
+      const prev = seen.get(o);
+      seen.set(o, last);
+      if (prev !== undefined && last !== prev) changed = true;
+    } catch {}
+  }
+  return changed;
 }
 
 if (isMain(import.meta.url)) main().catch((e) => { console.error(e); process.exit(1); });

@@ -58,8 +58,9 @@ export async function verifyHuman(world: World, store: Store, owner: string, res
   const responses: any[] = result.responses ?? [];
   const human = responses.find((r) => HUMAN.has(r.identifier));
   if (!human) throw fail(400, "no human credential in the proof");
-  const expected = hashSignal(signal).toLowerCase();
-  if (String(human.signal_hash ?? "").toLowerCase() !== expected) throw fail(400, "proof signal is not this account (request it with signal = owner address, lowercase)");
+  // The page may pass the owner checksummed or lowercase; both bind the proof to this one address.
+  const got = String(human.signal_hash ?? "").toLowerCase();
+  if (got !== hashSignal(signal).toLowerCase() && got !== hashSignal(owner).toLowerCase()) throw fail(400, "proof signal is not this account (request it with signal = owner address)");
   if (!store.consumeNonce(result.nonce)) throw fail(409, "rp_context nonce is unknown, expired or already used");
   await verifyWithPortal(result, world);
   return { nullifier: String(human.nullifier), credential: String(human.identifier), simulated: false };
