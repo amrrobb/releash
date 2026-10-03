@@ -311,7 +311,7 @@ main { max-width: 1320px; margin: 0 auto; padding: 0 24px 48px; }
 .delta--up { background: var(--green-soft); border: 1px solid rgba(0, 200, 5, 0.35); }
 .delta--up strong { color: var(--green); font-size: 34px; }
 .delta--up span { color: var(--text); font-weight: 600; }
-.delta--down { border: 1px dashed var(--line-2); }
+.delta:not(.delta--up) { border: 1px dashed var(--line-2); }
 @media (max-width: 1100px) { .demostrip__inner { grid-template-columns: 1fr 1fr; } .demostrip__market, .delta { grid-column: 1 / -1; } .delta { grid-auto-flow: column; gap: 10px; align-items: baseline; } }
 @media (max-width: 720px) { .demostrip__inner { grid-template-columns: 1fr; } .delta { grid-auto-flow: row; } }
 .feed__pin { margin: 0 0 12px; padding: 12px 14px; border-radius: 10px; background: var(--surface-2); border: 1px solid var(--line-2); border-left: 3px solid var(--green); animation: rise 0.35s both; }
@@ -319,3 +319,4 @@ main { max-width: 1320px; margin: 0 auto; padding: 0 24px 48px; }
 .feed__pin--bad .feed__title { color: var(--red); }
 .feed__pin-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 700; margin-bottom: 4px; }
 .feed__pin-label time { text-transform: none; letter-spacing: 0; font-weight: 400; }
+.delta__wait { font-size: 15px; font-weight: 600; color: var(--muted); line-height: 1.35; }

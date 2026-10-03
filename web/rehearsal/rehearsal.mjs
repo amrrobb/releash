@@ -197,10 +197,12 @@ await beat("Friday close", async () => {
   const badge = await page.getByTestId("market").innerText().catch(() => "?");
   const pill = await page.getByTestId("side-control").locator(".pill").innerText();
   if (pill === "LIQUIDATED") throw new Error("control shows LIQUIDATED before the gap");
+  const deltaPre = (await page.getByTestId("equity-delta").innerText()).replace(/\s+/g, " ");
+  if (/\$/.test(deltaPre)) throw new Error(`delta shows a number before the gap: "${deltaPre}"`);
   const hit = await waitFeed(/deleveraged 30%/, before, 120_000);
   const d1 = pos(ALICE).debt;
   if (!hit) throw new Error(`badge "${badge.replace(/\n/g, " ")}"; no 30% deleverage within 120 s (debt ${d0} -> ${d1})`);
-  return `badge "${badge.replace(/\n/g, " ")}"; control pill before gap ${pill}; feed "${hit.slice(0, 140)}"; chain debt ${d0} -> ${d1}`;
+  return `badge "${badge.replace(/\n/g, " ")}"; control pill before gap ${pill}; delta "${deltaPre}"; feed "${hit.slice(0, 140)}"; chain debt ${d0} -> ${d1}`;
 });
 
 await beat("Monday gap -35%", async () => {
@@ -215,7 +217,9 @@ await beat("Monday gap -35%", async () => {
   const hc = control ? health(control) : null, ha = health(ALICE);
   if (!st) throw new Error(`control pill never LIQUIDATED (chain control ltv ${hc?.ltv}% liq ${hc?.liq})`);
   if (a !== "SAFE") throw new Error(`Alice pill ${a}`);
-  return `price ${price()}; strip control ${st}, Alice ${a}; chain control ${control ? JSON.stringify(pos(control)) : "?"} ltv ${hc?.ltv}%, Alice ltv ${ha.ltv}% liq ${ha.liq}`;
+  const deltaPost = (await page.getByTestId("equity-delta").innerText()).replace(/\s+/g, " ");
+  if (!/Releash kept \$/.test(deltaPost)) throw new Error(`delta after the gap: "${deltaPost}"`);
+  return `delta "${deltaPost}"; price ${price()}; strip control ${st}, Alice ${a}; chain control ${control ? JSON.stringify(pos(control)) : "?"} ltv ${hc?.ltv}%, Alice ltv ${ha.ltv}% liq ${ha.liq}`;
 });
 
 await beat("Revoke", async () => {

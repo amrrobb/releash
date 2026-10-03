@@ -60,3 +60,9 @@ manual trigger was needed.
 - **Latest agent action is pinned** at the top of the feed. "Confirmed on-chain" clears after 6 s. Reset demo shows an
   elapsed-seconds counter.
 - The 01–09 screenshots for beats 2, 3, 6, 7 and 9 now show the new UI. Driver: `rehearsal.mjs`; see its header.
+
+## Delta gated on liquidation (13:55–13:58 JST, `BEATS=2,3,6,7,9`; all pass)
+The delta column shows no number until the control has a `Liquidated` event after its latest borrow. Before that it
+reads "Same stock, same market — watch Monday" (`06-friday-close.png`). After the gap it reads "Releash kept
+$1,907.62 more equity" (`07-monday-gap-35.png`: Alice 86.55 × 116.71 − 5,543.02 = $4,558.62; control $2,651.00, lost
+39.59 rNVDA). The driver now asserts both states. The demo was reset at the end: Alice debt 8,000, price 180.

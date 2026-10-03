@@ -144,6 +144,10 @@ export function DemoStrip({ owner, state }: { owner?: Address; state?: VaultStat
   const eqC = equityOf(control.data);
   const hasBoth = eqA !== undefined && eqC !== undefined && !!aliceState?.position.collateral && !!control.data?.position.collateral;
   const delta = hasBoth ? eqA! - eqC! : 0;
+  // The number only means something once the control has been liquidated; before that it is starting-debt
+  // differences and pool slippage, which is not the story.
+  const controlLiquidated = liquidationsSinceOpen(controlEvents.data).length > 0;
+  const showDelta = hasBoth && controlLiquidated && delta > 0;
 
   const busy = !!pending;
   const noKey = !DEMO_KEY;
@@ -156,23 +160,15 @@ export function DemoStrip({ owner, state }: { owner?: Address; state?: VaultStat
           <span className="quiet num">rNVDA {aliceState ? fmtUsd(px8(aliceState.price8)) : "—"}</span>
         </div>
         <Side title="Alice · with Releash" tag="releash" owner={alice} state={aliceState} events={aliceEvents.data} />
-        <div className={`delta ${hasBoth ? (delta > 0 ? "delta--up" : "delta--down") : ""}`} data-testid="equity-delta" aria-live="polite">
-          {hasBoth ? (
-            delta > 0 ? (
-              <>
-                <span>Releash kept</span>
-                <strong className="num">{fmtUsd(delta)}</strong>
-                <span>more equity</span>
-              </>
-            ) : (
-              <>
-                <span>De-risking cost so far</span>
-                <strong className="num">{fmtUsd(-delta)}</strong>
-                <span>pool slippage</span>
-              </>
-            )
+        <div className={`delta ${showDelta ? "delta--up" : ""}`} data-testid="equity-delta" aria-live="polite">
+          {showDelta ? (
+            <>
+              <span>Releash kept</span>
+              <strong className="num">{fmtUsd(delta)}</strong>
+              <span>more equity</span>
+            </>
           ) : (
-            <span className="quiet">Equity difference appears once both positions exist.</span>
+            <span className="delta__wait">Same stock, same market — watch Monday</span>
           )}
         </div>
         <Side title="Control · no agent" tag="control" owner={controlOwner} state={control.data} events={controlEvents.data} />
