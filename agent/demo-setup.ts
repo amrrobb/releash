@@ -76,6 +76,10 @@ export async function setup() {
   const c = await reconcile(control, CONTROL_DEBT);
 
   const a = await reconcile(alice, ALICE_DEBT);
+  // Fresh mandate: an earlier renewal or revoke must not carry over, so the demo starts unrenewed.
+  const [aAgent, , aRenewed, aRevoked] = (await read(dep.vault, vaultAbi, "mandates", [alice.account.address])) as [Address, bigint, bigint, boolean];
+  if (aAgent !== "0x0000000000000000000000000000000000000000" && (aRenewed !== 0n || aRevoked || aAgent.toLowerCase() !== agent.account.address.toLowerCase()))
+    await send(alice, dep.vault, vaultAbi, "fire", []);
   await send(alice, dep.vault, vaultAbi, "setMandate", [agent.account.address, AUTHORITY]);
 
   return { alice: a, control: c, agent: agent.account.address, liquidator: liq.account.address, authorityBase: fmt(AUTHORITY) };

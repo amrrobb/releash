@@ -9,7 +9,7 @@ const MANDATES_FILE = process.env.MANDATES_FILE ?? `${AGENT_DIR}mandates.json`;
 export const GUARD_HARD_BPS = 6500; // > 65% LTV: deleverage 30%, no model asked
 export const GUARD_SOFT_BPS = 5500; // > 55% LTV: deleverage 10%
 const LEVER_CAP_BPS = Number(process.env.LEVER_CAP_BPS ?? 4900); // never lever above this LTV (contract max 50%)
-const DECAY_SAFETY_S = Number(process.env.DECAY_SAFETY_S ?? 4); // seconds of decay to leave for the tx to land
+const DECAY_SAFETY_S = Number(process.env.DECAY_SAFETY_S ?? 2); // seconds of decay to leave for the tx to land
 const MIN_BORROW = 50_000000n; // 50 USDG
 
 export type Action = "hold" | "deleverage10" | "deleverage30" | "borrow";

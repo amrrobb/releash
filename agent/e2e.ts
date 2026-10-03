@@ -84,7 +84,7 @@ async function main() {
 
   console.log("== agent levers up within authority");
   const e1: any = await step(agent, A, { useModel });
-  beat("agent borrow within authority succeeds", e1.action === "borrow" && !e1.blocked && !!e1.result?.Borrowed, `+${n6(e1.result?.Borrowed?.amount)} USDG -> debt ${n6(e1.result?.Borrowed?.newDebt)} (authority was ${e1.state.authority}) [${e1.source}]`);
+  beat("agent levers up to ~8,800 within authority", e1.action === "borrow" && !e1.blocked && BigInt(e1.result?.Borrowed?.newDebt ?? 0) >= 8_800_000000n, `+${n6(e1.result?.Borrowed?.amount)} USDG -> debt ${n6(e1.result?.Borrowed?.newDebt)} (authority was ${e1.state.authority}) [${e1.source}]`);
 
   console.log("== agent tries beyond authority");
   const st2 = await readState(A);

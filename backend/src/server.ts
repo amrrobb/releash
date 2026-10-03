@@ -6,6 +6,7 @@ import { privateKeyToAccount } from "viem/accounts";
 import { loadConfig, type Config } from "./config.js";
 import { openStore } from "./store.js";
 import { issueRpContext, verifyHuman } from "./world.js";
+import { demoRoutes } from "./demo.js";
 
 const bad = (status: number, message: string) => Object.assign(new Error(message), { status });
 
@@ -22,7 +23,7 @@ export async function startServer(config: Config = loadConfig()) {
   const store = openStore(config.dbPath);
   if (config.world.simulate) console.warn("[WORLD_SIMULATE] World ID proofs are NOT verified with the Developer Portal. Local dev only.");
 
-  const routes: Record<string, (body: any, q: URLSearchParams) => Promise<unknown>> = {
+  const routes: Record<string, (body: any, q: URLSearchParams, headers: Record<string, string | string[] | undefined>) => Promise<unknown>> = {
     "GET /api/health": async () => ({ ok: true, chainId: config.chainId, vault, worldSigner: signer.address, worldSimulate: config.world.simulate, action: config.world.action, block: Number(await pub.getBlockNumber()) }),
 
     "POST /api/rp-context": async (body) => issueRpContext(config.world, store, body?.environment),
@@ -79,10 +80,12 @@ export async function startServer(config: Config = loadConfig()) {
     },
   };
 
+  if (process.env.DEMO_ENABLED === "1") Object.assign(routes, await demoRoutes());
+
   const server = createServer(async (req: IncomingMessage, res: ServerResponse) => {
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type, x-demo-key");
     if (req.method === "OPTIONS") return void res.writeHead(204).end();
     const url = new URL(req.url ?? "/", "http://x");
     const route = routes[`${req.method} ${url.pathname}`];
@@ -97,7 +100,7 @@ export async function startServer(config: Config = loadConfig()) {
         if (raw.length > 200_000) throw bad(413, "body too large");
         body = raw ? JSON.parse(raw) : {};
       }
-      reply(200, await route(body, url.searchParams));
+      reply(200, await route(body, url.searchParams, req.headers));
     } catch (err: any) {
       const status = err.status ?? (err instanceof SyntaxError ? 400 : 500);
       if (status >= 500) console.error(err.shortMessage ?? err.message, err.details ?? "");
