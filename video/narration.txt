@@ -1,0 +1,72 @@
+Releash demo video: narration with timestamps (render length 2:56.4, 30 fps).
+Generated from video/src/beats.ts by `npm run narration`. Timed at 2.3 words a second.
+Each line starts at its timestamp; read it at a calm pace and it ends before the next one.
+
+## cold  [0:00.0 - 0:08.0]
+0:00.3  This is the Chainlink NVDA price feed on Robinhood Chain mainnet.
+0:05.4  Stock feeds run 24/5.
+
+## freeze  [0:08.0 - 0:18.0]
+0:08.3  On each of the last three weekends it was silent for 52 hours,
+0:14.3  and for 78 hours over Labor Day.
+
+## weekend  [0:18.0 - 0:28.5]
+0:18.4  Borrow against tokenized NVDA and log off on Friday,
+0:22.6  and nobody is watching your loan when Monday opens with a gap.
+
+## title  [0:28.5 - 0:33.1]
+0:28.9  Releash: auto-deleverage for stock-backed loans on Robinhood Chain.
+
+## hero  [0:33.1 - 0:43.6]
+0:33.5  Your agent can always make the loan safer.
+0:37.2  It can only add debt while you keep proving you are still there.
+
+## intro  [0:43.6 - 0:51.9]
+0:43.9  Alice has a Releash agent.
+0:46.4  The control borrower holds the same 100 NVDA, with no agent.
+
+## renew  [0:51.9 - 1:17.7]
+0:52.2  Alice's mandate lets the agent lever her up to 9,500 USDG,
+0:57.3  but only after World ID proves a human is present.
+1:01.9  Here World ID runs in simulator mode.
+1:05.2  Within seconds the agent borrows $820.
+1:08.0  Jev, TypeSafe's decision model, picks from the contract's fixed menu of actions.
+1:13.5  The USDG goes to Alice, never the agent.
+
+## attempt  [1:17.7 - 1:30.0]
+1:18.1  Now it tries to borrow 1,500 more.
+1:21.4  The vault checks debt against authority at this block,
+1:25.5  and the transaction reverts on-chain.
+
+## decay  [1:30.0 - 1:40.2]
+1:30.3  Alice goes offline.
+1:31.9  Every two minutes here, daily in production, the ceiling halves.
+1:36.5  Nothing expires. It just cannot add debt.
+
+## close  [1:40.2 - 1:56.9]
+1:40.6  Friday close: the price freezes.
+1:43.0  Alice's mandate caps her weekend LTV, and its rules can override the model.
+1:48.9  So the agent repays 30% of the debt by selling collateral.
+1:54.0  Reducing risk needs no authority.
+
+## gap  [1:56.9 - 2:14.1]
+1:57.2  Monday opens 35% lower.
+2:01.4  The control borrower is liquidated and loses 39.6 rNVDA.
+2:05.5  Alice is still safe.
+2:07.5  Same stock, same gap: Releash kept over $1,500 more equity.
+
+## revoke  [2:14.1 - 2:30.1]
+2:14.5  Alice revokes the agent.
+2:16.5  It can still deleverage, and trims another 10%,
+2:24.3  but borrowing now reverts.
+2:26.3  Close always. Open only while you're alive.
+
+## contract  [2:30.1 - 2:43.0]
+2:30.5  No owner, no admin, no upgrade path.
+2:33.8  41 tests; invariants checked against deliberately broken contracts.
+2:37.5  An adversarial review's two signature-replay bugs are fixed, with regression tests.
+
+## closing  [2:43.0 - 2:56.4]
+2:43.4  Lending venues plug Releash in as an auto-deleverage module.
+2:47.5  Production is a change of constructor arguments: Paxos USDG and the Chainlink NVDA feed.
+

@@ -1,0 +1,31 @@
+{
+  "name": "releash-video",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Releash demo video: Remotion composition over a live Playwright capture of the hosted app",
+  "type": "module",
+  "scripts": {
+    "take": "node scripts/take.mjs",
+    "hero": "node scripts/hero.mjs",
+    "slice": "node scripts/slice.mjs",
+    "feed": "node scripts/feed-age.mjs",
+    "narration": "tsx scripts/narration.ts",
+    "studio": "remotion studio",
+    "render": "remotion render Releash out/releash-demo-nomusic.mp4 --concurrency=4",
+    "bed": "node scripts/bed.mjs",
+    "frames": "bash scripts/frames.sh"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.520",
+    "@remotion/google-fonts": "4.0.520",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "remotion": "4.0.520"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.7",
+    "playwright": "1.62",
+    "tsx": "^4.23.13",
+    "typescript": "5.9.3"
+  }
+}

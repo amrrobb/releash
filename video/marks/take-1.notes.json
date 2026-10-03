@@ -1,0 +1,19 @@
+{
+  "comment": "Facts read off the sliced footage by extracting frames (ffmpeg), for claims the driver's text scrape could not see because the feed merged the agent's reason into the line after the scrape.",
+  "leverJev": {
+    "visibleFrom": 5.0,
+    "clip": "lever.mp4",
+    "text": "Agent borrowed $820.00 / Debt now $8,820.00 / Market open, LTV 44.5%, unused authority 820 USDG. Jev: borrow_more 65%, hold 33%, deleverage_10 1%, deleverage_30 1% (confidence 54%).",
+    "checked": "frames at 2,3,4 s show no reason; 5,6,7 s show the Jev probabilities in the pinned line"
+  },
+  "gapDelta": {
+    "clip": "gap.mp4",
+    "values": { "48.5": "$1,533.18", "50": "$1,533.18", "52": "$1,527.49", "54": "$1,527.49", "56": "$1,527.49", "57.4": "$1,527.49" },
+    "use": "caption says 'over $1,500', true on every frame shown"
+  },
+  "revokeTrim": {
+    "clip": "revoke.mp4",
+    "text": "22:31:46 Revoked ... 22:32:07 Agent deleveraged 10% Sold 3.0136 rNVDA, repaid $350.07",
+    "use": "caption says the agent still trims 10% after the revoke; it does not name the guard or Jev as the reason"
+  }
+}

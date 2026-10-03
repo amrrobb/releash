@@ -1,0 +1,1610 @@
+{
+  "intro": {
+    "file": "capture/intro.mp4",
+    "dur": 7.03,
+    "events": {
+      "effect": 0,
+      "start": -1.8,
+      "end": 7.03
+    },
+    "rects": {
+      "scrollY": 0,
+      "authority-meter": {
+        "x": 709,
+        "y": 447,
+        "w": 482,
+        "h": 193
+      },
+      "authority-value": {
+        "x": 709,
+        "y": 451,
+        "w": 456,
+        "h": 60
+      },
+      "feed": {
+        "x": 1237,
+        "y": 443,
+        "w": 358,
+        "h": 890
+      },
+      "side-releash": {
+        "x": 514,
+        "y": 76,
+        "w": 426,
+        "h": 217
+      },
+      "side-control": {
+        "x": 1170,
+        "y": 76,
+        "w": 426,
+        "h": 217
+      },
+      "equity-delta": {
+        "x": 960,
+        "y": 76,
+        "w": 190,
+        "h": 217
+      },
+      "demo-result": {
+        "x": 820,
+        "y": 342,
+        "w": 399,
+        "h": 20
+      },
+      "market": {
+        "x": 439,
+        "y": 12,
+        "w": 190,
+        "h": 35
+      },
+      "simulate": {
+        "x": 709,
+        "y": 830,
+        "w": 310,
+        "h": 54
+      },
+      "revoke": {
+        "x": 709,
+        "y": 1015,
+        "w": 84,
+        "h": 42
+      },
+      "can-add": {
+        "x": 871,
+        "y": 748,
+        "w": 46,
+        "h": 21
+      },
+      "demo-close": {
+        "x": 324,
+        "y": 335,
+        "w": 97,
+        "h": 34
+      },
+      "demo-gap": {
+        "x": 429,
+        "y": 335,
+        "w": 133,
+        "h": 34
+      },
+      "demo-attempt": {
+        "x": 570,
+        "y": 335,
+        "w": 133,
+        "h": 34
+      },
+      "authority-panel": {
+        "x": 684,
+        "y": 383,
+        "w": 532,
+        "h": 937
+      },
+      "feed-panel": {
+        "x": 1236,
+        "y": 383,
+        "w": 360,
+        "h": 970
+      },
+      "strip": {
+        "x": 0,
+        "y": 60,
+        "w": 1920,
+        "h": 324
+      }
+    },
+    "data": {
+      "delta": "Same stock, same market — watch Monday",
+      "pills": [
+        "SAFE",
+        "SAFE"
+      ],
+      "meter": "$0.00",
+      "equityAlice": "$10,000.00",
+      "equityControl": "$9,200.00",
+      "market": "OPEN rNVDA $180.00"
+    },
+    "take": "1"
+  },
+  "renew": {
+    "file": "capture/renew.mp4",
+    "dur": 8.65,
+    "events": {
+      "click": 2.5,
+      "effect": 5.87,
+      "start": 1.35,
+      "end": 8.65
+    },
+    "rects": {
+      "scrollY": 317,
+      "authority-meter": {
+        "x": 709,
+        "y": 130,
+        "w": 482,
+        "h": 259
+      },
+      "authority-value": {
+        "x": 709,
+        "y": 134,
+        "w": 414,
+        "h": 60
+      },
+      "feed": {
+        "x": 1237,
+        "y": 126,
+        "w": 358,
+        "h": 890
+      },
+      "side-releash": {
+        "x": 514,
+        "y": -241,
+        "w": 426,
+        "h": 217
+      },
+      "side-control": {
+        "x": 1170,
+        "y": -241,
+        "w": 426,
+        "h": 217
+      },
+      "equity-delta": {
+        "x": 960,
+        "y": -241,
+        "w": 190,
+        "h": 217
+      },
+      "demo-result": {
+        "x": 820,
+        "y": 25,
+        "w": 399,
+        "h": 20
+      },
+      "market": {
+        "x": 439,
+        "y": 12,
+        "w": 190,
+        "h": 35
+      },
+      "simulate": {
+        "x": 709,
+        "y": 578,
+        "w": 310,
+        "h": 54
+      },
+      "revoke": {
+        "x": 709,
+        "y": 809,
+        "w": 84,
+        "h": 42
+      },
+      "can-add": {
+        "x": 871,
+        "y": 497,
+        "w": 139,
+        "h": 21
+      },
+      "demo-close": {
+        "x": 324,
+        "y": 18,
+        "w": 97,
+        "h": 34
+      },
+      "demo-gap": {
+        "x": 429,
+        "y": 18,
+        "w": 133,
+        "h": 34
+      },
+      "demo-attempt": {
+        "x": 570,
+        "y": 18,
+        "w": 133,
+        "h": 34
+      },
+      "authority-panel": {
+        "x": 684,
+        "y": 66,
+        "w": 532,
+        "h": 1048
+      },
+      "feed-panel": {
+        "x": 1236,
+        "y": 66,
+        "w": 360,
+        "h": 970
+      },
+      "strip": {
+        "x": 0,
+        "y": -257,
+        "w": 1920,
+        "h": 324
+      },
+      "countdown": {
+        "x": 709,
+        "y": 241,
+        "w": 140,
+        "h": 50
+      }
+    },
+    "data": {
+      "meter": "$9,271.76",
+      "canAdd": "up to $1,271.76",
+      "chainLastRenewed": 1791034120,
+      "chainAuthority": 9341.666667,
+      "buttonLabel": "Renew with World ID (simulated)"
+    },
+    "take": "1"
+  },
+  "lever": {
+    "file": "capture/lever.mp4",
+    "dur": 8.08,
+    "events": {
+      "effect": 1.69,
+      "start": 0,
+      "end": 8.08
+    },
+    "rects": {
+      "scrollY": 317,
+      "authority-meter": {
+        "x": 709,
+        "y": 130,
+        "w": 482,
+        "h": 259
+      },
+      "authority-value": {
+        "x": 709,
+        "y": 134,
+        "w": 414,
+        "h": 60
+      },
+      "feed-pinned": {
+        "x": 1257,
+        "y": 126,
+        "w": 318,
+        "h": 89
+      },
+      "feed": {
+        "x": 1237,
+        "y": 227,
+        "w": 358,
+        "h": 789
+      },
+      "side-releash": {
+        "x": 514,
+        "y": -241,
+        "w": 426,
+        "h": 217
+      },
+      "side-control": {
+        "x": 1170,
+        "y": -241,
+        "w": 426,
+        "h": 217
+      },
+      "equity-delta": {
+        "x": 960,
+        "y": -241,
+        "w": 190,
+        "h": 217
+      },
+      "demo-result": {
+        "x": 820,
+        "y": 25,
+        "w": 399,
+        "h": 20
+      },
+      "market": {
+        "x": 439,
+        "y": 12,
+        "w": 190,
+        "h": 35
+      },
+      "simulate": {
+        "x": 709,
+        "y": 578,
+        "w": 310,
+        "h": 54
+      },
+      "revoke": {
+        "x": 709,
+        "y": 764,
+        "w": 84,
+        "h": 42
+      },
+      "can-add": {
+        "x": 871,
+        "y": 497,
+        "w": 121,
+        "h": 21
+      },
+      "demo-close": {
+        "x": 324,
+        "y": 18,
+        "w": 97,
+        "h": 34
+      },
+      "demo-gap": {
+        "x": 429,
+        "y": 18,
+        "w": 133,
+        "h": 34
+      },
+      "demo-attempt": {
+        "x": 570,
+        "y": 18,
+        "w": 133,
+        "h": 34
+      },
+      "authority-panel": {
+        "x": 684,
+        "y": 66,
+        "w": 532,
+        "h": 1003
+      },
+      "feed-panel": {
+        "x": 1236,
+        "y": 66,
+        "w": 360,
+        "h": 970
+      },
+      "strip": {
+        "x": 0,
+        "y": -257,
+        "w": 1920,
+        "h": 324
+      },
+      "countdown": {
+        "x": 709,
+        "y": 241,
+        "w": 140,
+        "h": 50
+      }
+    },
+    "data": {
+      "feed": "22:28:46 Agent borrowed $820.00 Debt now $8,820.00 ON-CHAIN 0x6d01…d36f",
+      "pinned": "LATEST AGENT ACTION · 22:28:46 Agent borrowed $820.00 Debt now $8,820.00",
+      "jev": false,
+      "chainDebt": [
+        8000,
+        8820
+      ],
+      "meter": "$8,951.30"
+    },
+    "take": "1"
+  },
+  "attempt": {
+    "file": "capture/attempt.mp4",
+    "dur": 13.1,
+    "events": {
+      "click": 2,
+      "effect": 7.87,
+      "start": 0.42,
+      "end": 13.1
+    },
+    "rects": {
+      "scrollY": 0,
+      "authority-meter": {
+        "x": 709,
+        "y": 447,
+        "w": 482,
+        "h": 259
+      },
+      "authority-value": {
+        "x": 709,
+        "y": 451,
+        "w": 414,
+        "h": 60
+      },
+      "feed-pinned": {
+        "x": 1257,
+        "y": 443,
+        "w": 318,
+        "h": 109
+      },
+      "feed": {
+        "x": 1237,
+        "y": 563,
+        "w": 358,
+        "h": 769
+      },
+      "side-releash": {
+        "x": 514,
+        "y": 76,
+        "w": 426,
+        "h": 217
+      },
+      "side-control": {
+        "x": 1170,
+        "y": 76,
+        "w": 426,
+        "h": 217
+      },
+      "equity-delta": {
+        "x": 960,
+        "y": 76,
+        "w": 190,
+        "h": 217
+      },
+      "demo-result": {
+        "x": 820,
+        "y": 342,
+        "w": 512,
+        "h": 18
+      },
+      "market": {
+        "x": 439,
+        "y": 12,
+        "w": 190,
+        "h": 35
+      },
+      "simulate": {
+        "x": 709,
+        "y": 895,
+        "w": 310,
+        "h": 54
+      },
+      "revoke": {
+        "x": 709,
+        "y": 1081,
+        "w": 84,
+        "h": 42
+      },
+      "can-add": {
+        "x": 871,
+        "y": 814,
+        "w": 46,
+        "h": 21
+      },
+      "demo-close": {
+        "x": 324,
+        "y": 335,
+        "w": 97,
+        "h": 34
+      },
+      "demo-gap": {
+        "x": 429,
+        "y": 335,
+        "w": 133,
+        "h": 34
+      },
+      "demo-attempt": {
+        "x": 570,
+        "y": 335,
+        "w": 133,
+        "h": 34
+      },
+      "authority-panel": {
+        "x": 684,
+        "y": 383,
+        "w": 532,
+        "h": 1003
+      },
+      "feed-panel": {
+        "x": 1236,
+        "y": 383,
+        "w": 360,
+        "h": 970
+      },
+      "strip": {
+        "x": 0,
+        "y": 60,
+        "w": 1920,
+        "h": 324
+      },
+      "countdown": {
+        "x": 709,
+        "y": 558,
+        "w": 140,
+        "h": 50
+      }
+    },
+    "data": {
+      "strip": "Blocked on-chain: AuthorityExceeded(10320000000, 8827083334) 0x06f0…7129",
+      "feed": "22:28:57 Blocked on-chain: AuthorityExceeded Agent: borrow $1,500.00. Demo: the agent tries to borrow 1500 USDG. AGENT 0x06f0…7129",
+      "pinned": "LATEST AGENT ACTION · 22:28:57 Blocked on-chain: AuthorityExceeded Agent: borrow $1,500.00. Demo: the agent tries to borrow 1500 USDG.",
+      "chainDebt": [
+        8820,
+        8820
+      ]
+    },
+    "take": "1"
+  },
+  "decay": {
+    "file": "capture/decay.mp4",
+    "dur": 76.69,
+    "events": {
+      "effect": 0,
+      "start": -0.3,
+      "end": 76.7
+    },
+    "rects": {
+      "scrollY": 0,
+      "authority-meter": {
+        "x": 709,
+        "y": 447,
+        "w": 482,
+        "h": 259
+      },
+      "authority-value": {
+        "x": 709,
+        "y": 451,
+        "w": 414,
+        "h": 60
+      },
+      "feed-pinned": {
+        "x": 1257,
+        "y": 443,
+        "w": 318,
+        "h": 168
+      },
+      "feed": {
+        "x": 1237,
+        "y": 622,
+        "w": 358,
+        "h": 710
+      },
+      "side-releash": {
+        "x": 514,
+        "y": 76,
+        "w": 426,
+        "h": 217
+      },
+      "side-control": {
+        "x": 1170,
+        "y": 76,
+        "w": 426,
+        "h": 217
+      },
+      "equity-delta": {
+        "x": 960,
+        "y": 76,
+        "w": 190,
+        "h": 217
+      },
+      "demo-result": {
+        "x": 820,
+        "y": 342,
+        "w": 512,
+        "h": 18
+      },
+      "market": {
+        "x": 439,
+        "y": 12,
+        "w": 190,
+        "h": 35
+      },
+      "simulate": {
+        "x": 709,
+        "y": 895,
+        "w": 310,
+        "h": 54
+      },
+      "revoke": {
+        "x": 709,
+        "y": 1081,
+        "w": 84,
+        "h": 42
+      },
+      "can-add": {
+        "x": 871,
+        "y": 814,
+        "w": 46,
+        "h": 21
+      },
+      "demo-close": {
+        "x": 324,
+        "y": 335,
+        "w": 97,
+        "h": 34
+      },
+      "demo-gap": {
+        "x": 429,
+        "y": 335,
+        "w": 133,
+        "h": 34
+      },
+      "demo-attempt": {
+        "x": 570,
+        "y": 335,
+        "w": 133,
+        "h": 34
+      },
+      "authority-panel": {
+        "x": 684,
+        "y": 383,
+        "w": 532,
+        "h": 1003
+      },
+      "feed-panel": {
+        "x": 1236,
+        "y": 383,
+        "w": 360,
+        "h": 970
+      },
+      "strip": {
+        "x": 0,
+        "y": 60,
+        "w": 1920,
+        "h": 324
+      },
+      "countdown": {
+        "x": 709,
+        "y": 558,
+        "w": 140,
+        "h": 50
+      }
+    },
+    "data": {
+      "chainAuthority": [
+        8431.25,
+        5462.5
+      ],
+      "samples": [
+        {
+          "t": 1791034148073,
+          "meter": "$8,414.59",
+          "countdown": "1:32 NEXT HALVING"
+        },
+        {
+          "t": 1791034149081,
+          "meter": "$8,374.53",
+          "countdown": "1:31 NEXT HALVING"
+        },
+        {
+          "t": 1791034150085,
+          "meter": "$8,334.47",
+          "countdown": "1:30 NEXT HALVING"
+        },
+        {
+          "t": 1791034151117,
+          "meter": "$8,292.71",
+          "countdown": "1:29 NEXT HALVING"
+        },
+        {
+          "t": 1791034152183,
+          "meter": "$8,250.75",
+          "countdown": "1:28 NEXT HALVING"
+        },
+        {
+          "t": 1791034153188,
+          "meter": "$8,212.00",
+          "countdown": "1:27 NEXT HALVING"
+        },
+        {
+          "t": 1791034154191,
+          "meter": "$8,171.46",
+          "countdown": "1:26 NEXT HALVING"
+        },
+        {
+          "t": 1791034155195,
+          "meter": "$8,131.21",
+          "countdown": "1:25 NEXT HALVING"
+        },
+        {
+          "t": 1791034156201,
+          "meter": "$8,091.35",
+          "countdown": "1:24 NEXT HALVING"
+        },
+        {
+          "t": 1791034157210,
+          "meter": "$8,051.37",
+          "countdown": "1:23 NEXT HALVING"
+        },
+        {
+          "t": 1791034158216,
+          "meter": "$8,011.47",
+          "countdown": "1:22 NEXT HALVING"
+        },
+        {
+          "t": 1791034159221,
+          "meter": "$7,971.92",
+          "countdown": "1:21 NEXT HALVING"
+        },
+        {
+          "t": 1791034160225,
+          "meter": "$7,932.66",
+          "countdown": "1:20 NEXT HALVING"
+        },
+        {
+          "t": 1791034161230,
+          "meter": "$7,893.08",
+          "countdown": "1:19 NEXT HALVING"
+        },
+        {
+          "t": 1791034162233,
+          "meter": "$7,853.49",
+          "countdown": "1:18 NEXT HALVING"
+        },
+        {
+          "t": 1791034163241,
+          "meter": "$7,813.39",
+          "countdown": "1:17 NEXT HALVING"
+        },
+        {
+          "t": 1791034164253,
+          "meter": "$7,774.01",
+          "countdown": "1:16 NEXT HALVING"
+        },
+        {
+          "t": 1791034165280,
+          "meter": "$7,731.93",
+          "countdown": "1:15 NEXT HALVING"
+        },
+        {
+          "t": 1791034166288,
+          "meter": "$7,692.35",
+          "countdown": "1:14 NEXT HALVING"
+        },
+        {
+          "t": 1791034167301,
+          "meter": "$7,652.01",
+          "countdown": "1:13 NEXT HALVING"
+        },
+        {
+          "t": 1791034168306,
+          "meter": "$7,613.54",
+          "countdown": "1:12 NEXT HALVING"
+        },
+        {
+          "t": 1791034169314,
+          "meter": "$7,572.37",
+          "countdown": "1:11 NEXT HALVING"
+        },
+        {
+          "t": 1791034170318,
+          "meter": "$7,533.54",
+          "countdown": "1:10 NEXT HALVING"
+        },
+        {
+          "t": 1791034171322,
+          "meter": "$7,493.48",
+          "countdown": "1:09 NEXT HALVING"
+        },
+        {
+          "t": 1791034172330,
+          "meter": "$7,453.34",
+          "countdown": "1:08 NEXT HALVING"
+        },
+        {
+          "t": 1791034173334,
+          "meter": "$7,414.43",
+          "countdown": "1:07 NEXT HALVING"
+        },
+        {
+          "t": 1791034174342,
+          "meter": "$7,374.69",
+          "countdown": "1:06 NEXT HALVING"
+        },
+        {
+          "t": 1791034175346,
+          "meter": "$7,334.08",
+          "countdown": "1:05 NEXT HALVING"
+        },
+        {
+          "t": 1791034176348,
+          "meter": "$7,294.65",
+          "countdown": "1:04 NEXT HALVING"
+        },
+        {
+          "t": 1791034177352,
+          "meter": "$7,255.59",
+          "countdown": "1:03 NEXT HALVING"
+        },
+        {
+          "t": 1791034178356,
+          "meter": "$7,214.62",
+          "countdown": "1:02 NEXT HALVING"
+        },
+        {
+          "t": 1791034179369,
+          "meter": "$7,174.48",
+          "countdown": "1:01 NEXT HALVING"
+        },
+        {
+          "t": 1791034180378,
+          "meter": "$7,134.58",
+          "countdown": "1:00 NEXT HALVING"
+        },
+        {
+          "t": 1791034181389,
+          "meter": "$7,096.10",
+          "countdown": "0:59 NEXT HALVING"
+        },
+        {
+          "t": 1791034182392,
+          "meter": "$7,054.74",
+          "countdown": "0:58 NEXT HALVING"
+        },
+        {
+          "t": 1791034183404,
+          "meter": "$7,014.64",
+          "countdown": "0:57 NEXT HALVING"
+        },
+        {
+          "t": 1791034184418,
+          "meter": "$6,974.62",
+          "countdown": "0:56 NEXT HALVING"
+        },
+        {
+          "t": 1791034185429,
+          "meter": "$6,934.60",
+          "countdown": "0:55 NEXT HALVING"
+        },
+        {
+          "t": 1791034186476,
+          "meter": "$6,893.75",
+          "countdown": "0:54 NEXT HALVING"
+        },
+        {
+          "t": 1791034187482,
+          "meter": "$6,854.29",
+          "countdown": "0:53 NEXT HALVING"
+        },
+        {
+          "t": 1791034188516,
+          "meter": "$6,813.12",
+          "countdown": "0:52 NEXT HALVING"
+        },
+        {
+          "t": 1791034189541,
+          "meter": "$6,772.71",
+          "countdown": "0:51 NEXT HALVING"
+        },
+        {
+          "t": 1791034190548,
+          "meter": "$6,733.36",
+          "countdown": "0:50 NEXT HALVING"
+        },
+        {
+          "t": 1791034191552,
+          "meter": "$6,692.28",
+          "countdown": "0:49 NEXT HALVING"
+        },
+        {
+          "t": 1791034192581,
+          "meter": "$6,648.57",
+          "countdown": "0:47 NEXT HALVING"
+        },
+        {
+          "t": 1791034193693,
+          "meter": "$6,608.12",
+          "countdown": "0:46 NEXT HALVING"
+        },
+        {
+          "t": 1791034194714,
+          "meter": "$6,568.38",
+          "countdown": "0:45 NEXT HALVING"
+        },
+        {
+          "t": 1791034195718,
+          "meter": "$6,527.57",
+          "countdown": "0:44 NEXT HALVING"
+        },
+        {
+          "t": 1791034196721,
+          "meter": "$6,487.31",
+          "countdown": "0:43 NEXT HALVING"
+        },
+        {
+          "t": 1791034197737,
+          "meter": "$6,447.21",
+          "countdown": "0:42 NEXT HALVING"
+        },
+        {
+          "t": 1791034198741,
+          "meter": "$6,407.95",
+          "countdown": "0:41 NEXT HALVING"
+        },
+        {
+          "t": 1791034199747,
+          "meter": "$6,368.64",
+          "countdown": "0:40 NEXT HALVING"
+        },
+        {
+          "t": 1791034200750,
+          "meter": "$6,328.58",
+          "countdown": "0:39 NEXT HALVING"
+        },
+        {
+          "t": 1791034201768,
+          "meter": "$6,288.09",
+          "countdown": "0:38 NEXT HALVING"
+        },
+        {
+          "t": 1791034202772,
+          "meter": "$6,248.07",
+          "countdown": "0:37 NEXT HALVING"
+        },
+        {
+          "t": 1791034203775,
+          "meter": "$6,209.16",
+          "countdown": "0:36 NEXT HALVING"
+        },
+        {
+          "t": 1791034204778,
+          "meter": "$6,168.90",
+          "countdown": "0:35 NEXT HALVING"
+        },
+        {
+          "t": 1791034205782,
+          "meter": "$6,130.19",
+          "countdown": "0:34 NEXT HALVING"
+        },
+        {
+          "t": 1791034206785,
+          "meter": "$6,089.58",
+          "countdown": "0:33 NEXT HALVING"
+        },
+        {
+          "t": 1791034207789,
+          "meter": "$6,050.08",
+          "countdown": "0:32 NEXT HALVING"
+        },
+        {
+          "t": 1791034208870,
+          "meter": "$6,007.32",
+          "countdown": "0:31 NEXT HALVING"
+        },
+        {
+          "t": 1791034209875,
+          "meter": "$5,967.82",
+          "countdown": "0:30 NEXT HALVING"
+        },
+        {
+          "t": 1791034210880,
+          "meter": "$5,927.29",
+          "countdown": "0:29 NEXT HALVING"
+        },
+        {
+          "t": 1791034211887,
+          "meter": "$5,887.98",
+          "countdown": "0:28 NEXT HALVING"
+        },
+        {
+          "t": 1791034212898,
+          "meter": "$5,849.11",
+          "countdown": "0:27 NEXT HALVING"
+        },
+        {
+          "t": 1791034213902,
+          "meter": "$5,807.31",
+          "countdown": "0:26 NEXT HALVING"
+        },
+        {
+          "t": 1791034214905,
+          "meter": "$5,768.16",
+          "countdown": "0:25 NEXT HALVING"
+        },
+        {
+          "t": 1791034215907,
+          "meter": "$5,728.78",
+          "countdown": "0:24 NEXT HALVING"
+        },
+        {
+          "t": 1791034216911,
+          "meter": "$5,689.79",
+          "countdown": "0:23 NEXT HALVING"
+        },
+        {
+          "t": 1791034217919,
+          "meter": "$5,648.62",
+          "countdown": "0:22 NEXT HALVING"
+        },
+        {
+          "t": 1791034218930,
+          "meter": "$5,609.04",
+          "countdown": "0:21 NEXT HALVING"
+        },
+        {
+          "t": 1791034219948,
+          "meter": "$5,569.18",
+          "countdown": "0:20 NEXT HALVING"
+        },
+        {
+          "t": 1791034220953,
+          "meter": "$5,528.25",
+          "countdown": "0:19 NEXT HALVING"
+        },
+        {
+          "t": 1791034221956,
+          "meter": "$5,489.02",
+          "countdown": "0:18 NEXT HALVING"
+        }
+      ]
+    },
+    "take": "1"
+  },
+  "close": {
+    "file": "capture/close.mp4",
+    "dur": 24.73,
+    "events": {
+      "click": 2,
+      "closed": 2.91,
+      "effect": 18.56,
+      "start": 0.27,
+      "end": 24.73
+    },
+    "rects": {
+      "scrollY": 0,
+      "authority-meter": {
+        "x": 709,
+        "y": 447,
+        "w": 482,
+        "h": 259
+      },
+      "authority-value": {
+        "x": 709,
+        "y": 451,
+        "w": 414,
+        "h": 60
+      },
+      "feed-pinned": {
+        "x": 1257,
+        "y": 443,
+        "w": 318,
+        "h": 148
+      },
+      "feed": {
+        "x": 1237,
+        "y": 603,
+        "w": 358,
+        "h": 730
+      },
+      "side-releash": {
+        "x": 514,
+        "y": 76,
+        "w": 426,
+        "h": 217
+      },
+      "side-control": {
+        "x": 1170,
+        "y": 76,
+        "w": 426,
+        "h": 217
+      },
+      "equity-delta": {
+        "x": 960,
+        "y": 76,
+        "w": 190,
+        "h": 217
+      },
+      "demo-result": {
+        "x": 820,
+        "y": 342,
+        "w": 260,
+        "h": 20
+      },
+      "market": {
+        "x": 439,
+        "y": 12,
+        "w": 458,
+        "h": 35
+      },
+      "simulate": {
+        "x": 709,
+        "y": 895,
+        "w": 310,
+        "h": 54
+      },
+      "revoke": {
+        "x": 709,
+        "y": 1081,
+        "w": 84,
+        "h": 42
+      },
+      "can-add": {
+        "x": 871,
+        "y": 814,
+        "w": 46,
+        "h": 21
+      },
+      "demo-close": {
+        "x": 324,
+        "y": 335,
+        "w": 97,
+        "h": 34
+      },
+      "demo-gap": {
+        "x": 429,
+        "y": 335,
+        "w": 133,
+        "h": 34
+      },
+      "demo-attempt": {
+        "x": 570,
+        "y": 335,
+        "w": 133,
+        "h": 34
+      },
+      "authority-panel": {
+        "x": 684,
+        "y": 383,
+        "w": 532,
+        "h": 1003
+      },
+      "feed-panel": {
+        "x": 1236,
+        "y": 383,
+        "w": 360,
+        "h": 970
+      },
+      "strip": {
+        "x": 0,
+        "y": 60,
+        "w": 1920,
+        "h": 324
+      },
+      "countdown": {
+        "x": 709,
+        "y": 558,
+        "w": 140,
+        "h": 50
+      }
+    },
+    "data": {
+      "strip": "Market closed for the weekend. Price frozen.",
+      "badge": "WEEKEND price frozen since Fri 16:00 (1s) at $179.49",
+      "pillControl": "SAFE",
+      "deltaPre": "Same stock, same market — watch Monday",
+      "feed": "22:30:33 Agent deleveraged 30% Market is closed for the weekend and LTV 46.5% is above your weekend limit of 45.0%; de-risking before a Monday gap. Sold 13.2875 rNVDA, repaid $2,381.40 AGENT · ON-CHAIN 0xc1d1…99b0",
+      "pinned": "LATEST AGENT ACTION · 22:30:33 Agent deleveraged 30% Sold 13.2875 rNVDA, repaid $2,381.40 Market is closed for the weekend and LTV 46.5% is above your weekend limit of 45.0%; de-risking before a Monday gap.",
+      "mandateReason": true,
+      "chainDebt": [
+        7938,
+        5556.6
+      ]
+    },
+    "take": "1"
+  },
+  "gap": {
+    "file": "capture/gap.mp4",
+    "dur": 57.5,
+    "events": {
+      "click": 2,
+      "gapped": 48.21,
+      "liquidated": 48.21,
+      "effect": 48.21,
+      "start": 0.93,
+      "end": 57.5
+    },
+    "rects": {
+      "scrollY": 0,
+      "authority-meter": {
+        "x": 709,
+        "y": 474,
+        "w": 482,
+        "h": 259
+      },
+      "authority-value": {
+        "x": 709,
+        "y": 478,
+        "w": 414,
+        "h": 60
+      },
+      "feed-pinned": {
+        "x": 1257,
+        "y": 470,
+        "w": 318,
+        "h": 89
+      },
+      "feed": {
+        "x": 1237,
+        "y": 571,
+        "w": 358,
+        "h": 789
+      },
+      "side-releash": {
+        "x": 514,
+        "y": 76,
+        "w": 426,
+        "h": 245
+      },
+      "side-control": {
+        "x": 1170,
+        "y": 76,
+        "w": 426,
+        "h": 245
+      },
+      "equity-delta": {
+        "x": 960,
+        "y": 76,
+        "w": 190,
+        "h": 245
+      },
+      "demo-result": {
+        "x": 820,
+        "y": 369,
+        "w": 200,
+        "h": 20
+      },
+      "market": {
+        "x": 439,
+        "y": 12,
+        "w": 190,
+        "h": 35
+      },
+      "simulate": {
+        "x": 709,
+        "y": 923,
+        "w": 310,
+        "h": 54
+      },
+      "revoke": {
+        "x": 709,
+        "y": 1108,
+        "w": 84,
+        "h": 42
+      },
+      "can-add": {
+        "x": 871,
+        "y": 841,
+        "w": 111,
+        "h": 21
+      },
+      "demo-close": {
+        "x": 324,
+        "y": 362,
+        "w": 97,
+        "h": 34
+      },
+      "demo-gap": {
+        "x": 429,
+        "y": 362,
+        "w": 133,
+        "h": 34
+      },
+      "demo-attempt": {
+        "x": 570,
+        "y": 362,
+        "w": 133,
+        "h": 34
+      },
+      "authority-panel": {
+        "x": 684,
+        "y": 411,
+        "w": 532,
+        "h": 1003
+      },
+      "feed-panel": {
+        "x": 1236,
+        "y": 411,
+        "w": 360,
+        "h": 970
+      },
+      "strip": {
+        "x": 0,
+        "y": 60,
+        "w": 1920,
+        "h": 351
+      },
+      "countdown": {
+        "x": 709,
+        "y": 585,
+        "w": 140,
+        "h": 50
+      }
+    },
+    "data": {
+      "strip": "Monday open: price gapped −35%.",
+      "delta": "Releash kept $1,533.18 more equity",
+      "pillAlice": "SAFE",
+      "pillControl": "LIQUIDATED",
+      "price": 116.67,
+      "equityAlice": "$4,174.49",
+      "equityControl": "$2,647.00",
+      "lostControl": "Lost to liquidation: 39.5989 rNVDA",
+      "sideAlice": "Alice · with Releash 0x454a…D991 SAFE EQUITY $4,174.49 LTV 45.6% 0 50 70 100 65.7851 rNVDA $3,500.66 debt",
+      "sideControl": "Control · no agent 0x3C6D…1603 LIQUIDATED EQUITY $2,647.00 LTV 62.4% 0 50 70 100 60.4011 rNVDA $4,400.00 debt Lost to liquidation: 39.5989 rNVDA",
+      "chainAlice": {
+        "col": 65.78511420002725,
+        "debt": 3500.658,
+        "ltv": 54.47
+      },
+      "chainControl": {
+        "col": 60.40113139624582,
+        "debt": 4400,
+        "ltv": 62.44
+      }
+    },
+    "take": "1"
+  },
+  "revoke": {
+    "file": "capture/revoke.mp4",
+    "dur": 31.13,
+    "events": {
+      "click": 2,
+      "revoked": 3.8,
+      "effect": 25.48,
+      "start": 1.22,
+      "end": 31.13
+    },
+    "rects": {
+      "scrollY": 341,
+      "authority-meter": {
+        "x": 709,
+        "y": 133,
+        "w": 482,
+        "h": 193
+      },
+      "authority-value": {
+        "x": 709,
+        "y": 137,
+        "w": 456,
+        "h": 60
+      },
+      "feed-pinned": {
+        "x": 1257,
+        "y": 129,
+        "w": 318,
+        "h": 89
+      },
+      "feed": {
+        "x": 1237,
+        "y": 230,
+        "w": 358,
+        "h": 789
+      },
+      "side-releash": {
+        "x": 514,
+        "y": -265,
+        "w": 426,
+        "h": 245
+      },
+      "side-control": {
+        "x": 1170,
+        "y": -265,
+        "w": 426,
+        "h": 245
+      },
+      "equity-delta": {
+        "x": 960,
+        "y": -265,
+        "w": 190,
+        "h": 245
+      },
+      "demo-result": {
+        "x": 820,
+        "y": 28,
+        "w": 200,
+        "h": 20
+      },
+      "market": {
+        "x": 439,
+        "y": 12,
+        "w": 190,
+        "h": 35
+      },
+      "simulate": {
+        "x": 709,
+        "y": 516,
+        "w": 310,
+        "h": 54
+      },
+      "revoke": {
+        "x": 709,
+        "y": 702,
+        "w": 84,
+        "h": 42
+      },
+      "can-add": {
+        "x": 871,
+        "y": 435,
+        "w": 46,
+        "h": 21
+      },
+      "demo-close": {
+        "x": 324,
+        "y": 21,
+        "w": 97,
+        "h": 34
+      },
+      "demo-gap": {
+        "x": 429,
+        "y": 21,
+        "w": 133,
+        "h": 34
+      },
+      "demo-attempt": {
+        "x": 570,
+        "y": 21,
+        "w": 133,
+        "h": 34
+      },
+      "authority-panel": {
+        "x": 684,
+        "y": 70,
+        "w": 532,
+        "h": 937
+      },
+      "feed-panel": {
+        "x": 1236,
+        "y": 70,
+        "w": 360,
+        "h": 970
+      },
+      "strip": {
+        "x": 0,
+        "y": -281,
+        "w": 1920,
+        "h": 351
+      }
+    },
+    "data": {
+      "chainRevoked": true,
+      "canAdd": "$0.00",
+      "feed": "22:32:07 Agent deleveraged 10% Sold 3.0136 rNVDA, repaid $350.07 ON-CHAIN 0x00fb…bbe8",
+      "pinned": "LATEST AGENT ACTION · 22:32:07 Agent deleveraged 10% Sold 3.0136 rNVDA, repaid $350.07",
+      "guardReason": false,
+      "chainDebt": [
+        3500.658,
+        3150.5922
+      ]
+    },
+    "take": "1"
+  },
+  "revokedAttempt": {
+    "file": "capture/revokedAttempt.mp4",
+    "dur": 11.44,
+    "events": {
+      "click": 2,
+      "effect": 6.36,
+      "start": 0.27,
+      "end": 11.44
+    },
+    "rects": {
+      "scrollY": 0,
+      "authority-meter": {
+        "x": 709,
+        "y": 474,
+        "w": 482,
+        "h": 193
+      },
+      "authority-value": {
+        "x": 709,
+        "y": 478,
+        "w": 456,
+        "h": 60
+      },
+      "feed-pinned": {
+        "x": 1257,
+        "y": 470,
+        "w": 318,
+        "h": 109
+      },
+      "feed": {
+        "x": 1237,
+        "y": 591,
+        "w": 358,
+        "h": 769
+      },
+      "side-releash": {
+        "x": 514,
+        "y": 76,
+        "w": 426,
+        "h": 245
+      },
+      "side-control": {
+        "x": 1170,
+        "y": 76,
+        "w": 426,
+        "h": 245
+      },
+      "equity-delta": {
+        "x": 960,
+        "y": 76,
+        "w": 190,
+        "h": 245
+      },
+      "demo-result": {
+        "x": 820,
+        "y": 370,
+        "w": 310,
+        "h": 18
+      },
+      "market": {
+        "x": 439,
+        "y": 12,
+        "w": 190,
+        "h": 35
+      },
+      "simulate": {
+        "x": 709,
+        "y": 857,
+        "w": 310,
+        "h": 54
+      },
+      "revoke": {
+        "x": 709,
+        "y": 1043,
+        "w": 84,
+        "h": 42
+      },
+      "can-add": {
+        "x": 871,
+        "y": 776,
+        "w": 46,
+        "h": 21
+      },
+      "demo-close": {
+        "x": 324,
+        "y": 362,
+        "w": 97,
+        "h": 34
+      },
+      "demo-gap": {
+        "x": 429,
+        "y": 362,
+        "w": 133,
+        "h": 34
+      },
+      "demo-attempt": {
+        "x": 570,
+        "y": 362,
+        "w": 133,
+        "h": 34
+      },
+      "authority-panel": {
+        "x": 684,
+        "y": 411,
+        "w": 532,
+        "h": 937
+      },
+      "feed-panel": {
+        "x": 1236,
+        "y": 411,
+        "w": 360,
+        "h": 970
+      },
+      "strip": {
+        "x": 0,
+        "y": 60,
+        "w": 1920,
+        "h": 351
+      }
+    },
+    "data": {
+      "strip": "Blocked on-chain: MandateRevoked 0xd867…f66b",
+      "feed": "22:32:16 Blocked on-chain: MandateRevoked Agent: borrow $1,500.00. Demo: the agent tries to borrow 1500 USDG. AGENT 0xd867…f66b",
+      "chainDebt": [
+        3150.5922,
+        3150.5922
+      ]
+    },
+    "take": "1"
+  },
+  "hero": {
+    "file": "capture/hero.mp4",
+    "dur": 11.16,
+    "events": {
+      "effect": 0,
+      "scroll": 6.01,
+      "start": 0,
+      "end": 11.15
+    },
+    "rects": null,
+    "data": {
+      "h1": "Close always. Open only while you're alive.",
+      "meter": "$0.00"
+    },
+    "take": "hero-2"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "take": "hero-2",
+  "site": "https://releash.robbyn.xyz/",
+  "flashes": [
+    {
+      "name": "start",
+      "wall": 1791036869663
+    },
+    {
+      "name": "end",
+      "wall": 1791036882332
+    }
+  ],
+  "beats": {
+    "hero": {
+      "start": 1791036871167,
+      "effect": 1791036871167,
+      "scroll": 1791036877180,
+      "end": 1791036882314,
+      "data": {
+        "h1": "Close always. Open only while you're alive.",
+        "meter": "$0.00"
+      }
+    }
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "feed": "0x379EC4f7C378F34a1B47E4F3cbeBCbAC3E8E9F15",
+  "description": "\"RHNVDA / USD\"",
+  "command": "cast call 0x379E…9F15 'latestRoundData()' --rpc-url rpc.mainnet.chain.robinhood.com",
+  "lines": [
+    "18446744073709552778 [1.844e19]",
+    "23499711907 [2.349e10]",
+    "1790960839 [1.79e9]",
+    "1790960852 [1.79e9]",
+    "18446744073709552778 [1.844e19]"
+  ],
+  "answer": 234.99711907,
+  "updatedAt": 1790960852,
+  "updatedAtUtc": "Fri, 02 Oct 2026 17:07:32 GMT",
+  "readAt": 1791034085,
+  "readAtUtc": "Sat, 03 Oct 2026 13:28:05 GMT",
+  "ageHours": 20.3
+}
