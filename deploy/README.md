@@ -62,6 +62,7 @@ Never run `docker compose config` or `docker inspect` on these containers in a s
 
 ## Notes
 
+- **Do not press the hosted demo buttons (Friday close, Monday gap, Agent tries, Reset) while the laptop demo runs with the same keys.** They send from the keeper, agent, Alice and Control keys, and two senders on one key collide on nonces.
 - The backend's demo routes (`/api/demo/*`, gated by `x-demo-key`) send from the keeper, Alice and Control keys. The hosted web bundle contains `VITE_DEMO_KEY` and the demo account key. Treat both as public, testnet dust only.
 - `market.json` on the VPS is separate from any laptop copy. The hosted "OPEN/WEEKEND" label only follows a Friday close done through the hosted backend or the hosted keeper.
 - Logs rotate at 10 MB × 3 per container.
