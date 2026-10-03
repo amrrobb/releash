@@ -45,7 +45,7 @@
 | ENS, SwapVM | Dropped |
 | Collateral | One asset (rNVDA) |
 | Deleverage sizes | Discrete: 10% or 30% of debt |
-| Demo mode | Half-life 60 s, price keeper, fake market clock, price shock, revoke-to-block |
+| Demo mode | Half-life 120 s (60 s made the lever-up beat a 9 s window), price keeper, fake market clock, price shock, revoke-to-block |
 
 **Never claim:**
 - That World ID is KYC. It proves a unique, present human, not a jurisdiction. Robinhood stock tokens are exclud… *(text lost here)*

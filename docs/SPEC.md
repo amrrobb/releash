@@ -4,7 +4,7 @@ The original handoff was truncated after section 1. This file replaces sections 
 
 ## 1. Product in one paragraph
 
-A borrower deposits rNVDA and borrows USDG. They hand an agent a **mandate**: "keep me safe, and you may lever me up to X USDG of debt". The authority to **add** debt (X) halves every half-life (1 day in production, 60 s in the demo) and reaches zero after 3 half-lives, unless the borrower renews it by proving with World ID that they are still there. The authority to **reduce** risk (deleverage 10% or 30% of debt by selling collateral into the pool) never decays, survives revoke, and needs no renewal. A borrower who goes offline on Friday ends up with a position that can only get safer. Without Releash (the control position), a Monday gap gets the position liquidated.
+A borrower deposits rNVDA and borrows USDG. They hand an agent a **mandate**: "keep me safe, and you may lever me up to X USDG of debt". The authority to **add** debt (X) halves every half-life (1 day in production, 120 s in the demo) and reaches zero after 3 half-lives, unless the borrower renews it by proving with World ID that they are still there. The authority to **reduce** risk (deleverage 10% or 30% of debt by selling collateral into the pool) never decays, survives revoke, and needs no renewal. A borrower who goes offline on Friday ends up with a position that can only get safer. Without Releash (the control position), a Monday gap gets the position liquidated.
 
 ## 2. Actors
 
@@ -102,7 +102,7 @@ One page, wallet connect (injected), Robinhood testnet.
 
 ## 7. Demo story (3 min)
 
-1. Alice deposits 100 rNVDA ($180 each), borrows 8,000 USDG (44% LTV). Mandate: authority 9,000 USDG, half-life 60 s.
+1. Alice deposits 100 rNVDA ($180 each), borrows 8,000 USDG (44% LTV). Mandate: authority 9,000 USDG, half-life 120 s. Control borrows 8,800 by hand (at 8,000 a −35% gap stops at 68.4%, under the 70% line).
 2. Renews with World ID: meter fills. Agent levers up to 8,800 within authority (allowed).
 3. Agent tries to borrow beyond authority → blocked by the contract on-chain (red).
 4. Time passes: meter halves, halves again. Alice is "offline".

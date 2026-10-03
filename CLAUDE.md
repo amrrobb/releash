@@ -18,7 +18,7 @@ Deadline: Sun 4 Oct 2026, submit by 15:00 JST. Judging: smart contract quality f
 
 ## Stack
 - Contracts: Foundry, solc 0.8.28, OZ v5.1 (submodules). `forge fmt` before commit. One test file per contract + `Releash.invariant.t.sol` + `Releash.e2e.t.sol`.
-- Backend (`backend/`): Node 20+, TypeScript via tsx, viem, IDKit verify (port from `~/Documents/Web3/ETHGlobal/ETHGlobalTokyo/leash/backend/src/world.js`), EIP-712 signer.
+- Backend (`backend/`): Node 22.13+ (built-in SQLite), TypeScript via tsx, viem, IDKit verify (port from `~/Documents/Web3/ETHGlobal/ETHGlobalTokyo/leash/backend/src/world.js`), EIP-712 signer.
 - Agent (`agent/`): Node + viem, OpenRouter (Jev if the slug exists, Claude fallback). Output is one of {hold, deleverage10, deleverage30, borrow}. Always log viem `err.details`.
 - Keeper (`agent/keeper.ts`): price + fake market clock for the demo.
 - Web (`web/`): Vite + React + TS + viem/wagmi, injected wallet. Identity comes from the connected wallet (anyone can play the user).

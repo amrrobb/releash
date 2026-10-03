@@ -9,11 +9,12 @@ All facts below were checked against a live RPC/API call or an official doc on t
    - Alchemy: https://www.alchemy.com/faucets/robinhood-testnet gives 0.1 ETH / 24 h, no login, but the **receiving wallet needs ≥ 0.001 ETH on Ethereum mainnet** plus mainnet history. A fresh key fails this; use the official faucet, or claim to a personal wallet and send it on.
    - Chainstack MCP faucet (`request_testnet_funds`, `network="robinhood"`, up to 1 ETH) needs a Chainstack API key; none found on disk.
    - 0.1 ETH is far more than needed (gas price 0.01 gwei).
-2. **OpenRouter credit is ~$0.96.** The only key found (see §3) shows `total_credits 13`, `total_usage 12.04`. Jev costs almost nothing (one decision = $0.0000186), but Claude fallback calls will drain $0.96 fast. Top up, or keep Claude to a few calls.
-3. **Jev is not a chat model.** The handoff's "Jev decides, Claude fallback, one key" is right on the key, wrong on the API: Jev only answers on `POST /api/alpha/decisions`, not `/chat/completions` (see §3). The agent code must be written for that shape.
-4. **Deadline is later than the handoff assumed, keep the 15:00 JST target anyway.** HackQuest stores `submissionClose` as `2026-10-04T15:59:00.000Z` (UTC) = **Mon 5 Oct 00:59 JST**. The handoff read "15:59" as JST. Submitting by Sun 15:00 JST leaves ~10 h of slack, do not plan to use it.
-5. **A video is mandatory.** HackQuest blocks submission of a BUIDL without at least one video ("Video Required", "Has At Least One Video"); YouTube link. No max length is stated on this hackathon's page.
-6. **World ID staging token** must be (re)opened in the Developer Portal for the demo window if using the simulator (Leash's note: "Staging proofs verify only inside a window opened on the portal"). Leash's `.env` has `WORLD_APP_ID, WORLD_RP_ID, WORLD_RP_SIGNING_KEY, WORLD_VERIFY_URL, WORLD_STAGING_TOKEN, WORLD_CREDENTIALS` and can be reused if the app is still the right one.
+2. **Confirm HackQuest registration now.** The page has a `USER_NOT_REGISTER` state and a registration form (T&C, email, Telegram, GitHub and Twitter all mandatory). Registration closes `2026-10-04T15:58Z`. Nothing in the handoff says the human registered. If approval is manual or shows "pending review", that is a harder deadline than the code. Also: the submission form requires a **hosted frontend link**, so a deployed web app is a deliverable, not optional.
+3. **OpenRouter credit is ~$0.96.** The only key found (see §3) shows `total_credits 13`, `total_usage 12.04`. Jev costs almost nothing (one decision = $0.0000186), but Claude fallback calls will drain $0.96 fast. Top up, or keep Claude to a few calls.
+4. **Jev is not a chat model.** The handoff's "Jev decides, Claude fallback, one key" is right on the key, wrong on the API: Jev only answers on `POST /api/alpha/decisions`, not `/chat/completions` (see §3). The agent code must be written for that shape.
+5. **Deadline is later than the handoff assumed, keep the 15:00 JST target anyway.** HackQuest stores `submissionClose` as `2026-10-04T15:59:00.000Z` (UTC) = **Mon 5 Oct 00:59 JST**. The handoff read "15:59" as JST. Submitting by Sun 15:00 JST leaves ~10 h of slack, do not plan to use it.
+6. **A video is mandatory.** HackQuest blocks submission of a BUIDL without at least one video ("Video Required", "Has At Least One Video"); YouTube link. No max length is stated on this hackathon's page.
+7. **World ID staging token** must be (re)opened in the Developer Portal for the demo window if using the simulator (Leash's note: "Staging proofs verify only inside a window opened on the portal"). Leash's `.env` has `WORLD_APP_ID, WORLD_RP_ID, WORLD_RP_SIGNING_KEY, WORLD_VERIFY_URL, WORLD_STAGING_TOKEN, WORLD_CREDENTIALS` and can be reused if the app is still the right one.
 
 ## 1. Robinhood Chain testnet
 
@@ -27,7 +28,7 @@ All facts below were checked against a live RPC/API call or an official doc on t
 | Gas token | ETH | https://docs.robinhood.com/chain/ |
 | Gas price | `eth_gasPrice` = 0.01 gwei (Blockscout: slow 0.01 / avg 0.02) | live |
 | Block time | ~0.14 s: 50 blocks in 7 s wall time (127905982 → 127906032); Blockscout `average_block_time` 141 ms. Arbitrum-style, blocks are cheap, `block.timestamp` has 1 s resolution. | live |
-| Settles to | Ethereum Sepolia | https://www.datawallet.com/crypto/get-robinhood-chain-testnet-tokens |
+| Settles to | Ethereum Sepolia (third-party claim, not confirmed in official docs) | https://www.datawallet.com/crypto/get-robinhood-chain-testnet-tokens |
 | Mainnet (for README) | chain 4663, `https://rpc.mainnet.chain.robinhood.com`, https://robinhoodchain.blockscout.com | docs connecting page; `cast chain-id` live |
 
 **Verify (Blockscout, no API key):**
@@ -63,7 +64,16 @@ Mainnet (4663), every address verified with `cast call` against `https://rpc.mai
 | Chainlink ETH/USD | `0x78F3556b67E17Df817D51Ef5a990cDaF09E8d3A9` | 8 dec | same |
 | syrupUSDG/USDG rate | `0xDd194C66aDcb422F188a04434e4824D70c151cF0` | 18 dec | same |
 
-**Pitch evidence, live today:** the NVDA/USD feed's `updatedAt` is 1790960839, about **10.2 hours before** the read (Sat 3 Oct, US market closed). The weekend price freeze in the problem statement is directly observable on mainnet. Re-read it at recording time for the video.
+**Pitch evidence (mainnet NVDA/USD round history, read with `getRoundData` over the last 200 rounds):** the feed goes silent every weekend for longer than its own 24 h heartbeat:
+
+| Last update before the gap | Next update | Silence |
+| --- | --- | --- |
+| Fri 25 Sep 19:56 UTC (225.66) | Mon 28 Sep ~00:02 UTC | 52.1 h |
+| Fri 18 Sep 19:55 UTC (222.45) | Mon 21 Sep ~00:01 UTC | 52.1 h |
+| Fri 11 Sep 20:03 UTC (218.30) | Mon 14 Sep ~00:00 UTC | 51.9 h |
+| Fri 4 Sep 17:46 UTC (230.24) | Tue 8 Sep ~00:00 UTC (US Labor Day) | 78.2 h |
+
+The latest round today was Fri 2 Oct 17:07 UTC (234.997). Its 10 h age as of Saturday morning is ordinary deviation-threshold behaviour and is not, on its own, proof of a freeze, so do not cite it. Cite the table instead. At recording time on Sunday the age will be over 36 h, which exceeds the heartbeat; re-read it live for the video (`cast call 0x379EC4f7C378F34a1B47E4F3cbeBCbAC3E8E9F15 'latestRoundData()(uint80,int256,uint256,uint256,uint80)' --rpc-url https://rpc.mainnet.chain.robinhood.com`).
 
 Testnet (46630):
 
@@ -144,6 +154,6 @@ Leash (`ETHGlobalTokyo/leash/backend/src/world.js`, `config.js`, `docs/WORLD-DEB
 Status today:
 - **Still current.** `@worldcoin/idkit-core` latest on npm is **4.3.0** (published 19 Sep 2026), same as Leash.
 - **Verify endpoint unchanged:** `POST https://developer.world.org/api/v4/verify/{rp_id}`; docs list `developer.worldcoin.org` as the legacy domain and `staging-developer.worldcoin.org` as staging. All three answer live today (dummy payload → `400 validation_error "At least one response item is required"`). Docs: "Forward the complete IDKit result without remapping response identifiers". The **v2** endpoint is only for apps not migrated to 4.0, so do not use v2. Source: https://docs.world.org/world-id/reference/api
-- Change to make: default `WORLD_VERIFY_URL` to `https://developer.world.org/api/v4/verify` (the old domain still works).
+- What Leash actually ran with (its `.env`, overriding the config.js default): `WORLD_VERIFY_URL=https://developer.world.org/api/v4/verify` and `WORLD_CREDENTIALS=proof_of_human`. So staging/simulator proofs went to the **production host** `developer.world.org` with the `x-staging-verification-token` header, not to `staging-developer.worldcoin.org`. Reuse exactly that.
 - **Simulator for demos:** works per Leash's debrief (2 weeks ago), with these constraints: single `proof_of_human` request, no legacy; staging token window must be open; the simulator returns the **same nullifier for every identity**, so "a second human is refused" cannot be shown live. Not re-tested end to end today (needs the portal session).
 - Releash-specific: the handoff design (backend verifies, then signs an EIP-712 grant the contract checks) needs no on-chain World verifier, so the absence of a World ID router on Robinhood Chain is not a problem. Disclose the backend signer as a trust assumption (already in the handoff).
