@@ -16,6 +16,32 @@ export async function startServer(config: Config = loadConfig()) {
   const signer = privateKeyToAccount(config.signerPk);
   const vault = config.deployments.vault;
   const read = (functionName: string, args: unknown[] = [], blockNumber?: bigint) => pub.readContract({ address: vault, abi: config.vaultAbi, functionName, args, blockNumber } as any) as Promise<any>;
+  /** Reads that must describe ONE block. The public RPC is load-balanced: the node that answers the
+   * pinned read may not have the block the previous node reported ("unsupported block number"), which
+   * made /api/market 500. Retry with a fresh head, then fall back to the latest block, unpinned. */
+  async function atOneBlock<T>(fn: (block: { number: bigint; timestamp: bigint }) => Promise<T>): Promise<T> {
+    for (let i = 0; i < 3; i++) {
+      try {
+        const block = await pub.getBlock({ blockTag: "latest" });
+        return await fn({ number: block.number!, timestamp: block.timestamp });
+      } catch (e: any) {
+        if (!/unsupported block number|header not found|unknown block/i.test(`${e?.details ?? ""} ${e?.shortMessage ?? ""} ${e?.message ?? ""}`)) throw e;
+        await new Promise((r) => setTimeout(r, 300));
+      }
+    }
+    const block = await pub.getBlock({ blockTag: "latest" });
+    return fn({ number: undefined as any, timestamp: block.timestamp });
+  }
+  const readJsonFile = async (path: string, fallback: any) => {
+    for (let i = 0; i < 2; i++) {
+      try {
+        return existsSync(path) ? JSON.parse(readFileSync(path, "utf8")) : fallback;
+      } catch {
+        await new Promise((r) => setTimeout(r, 50)); // a writer mid-rename: read again
+      }
+    }
+    return fallback;
+  };
 
   // The vault only accepts signatures from its immutable worldSigner: refuse to start with any other key.
   const onChainSigner = (await read("worldSigner")) as Address;
@@ -43,8 +69,10 @@ export async function startServer(config: Config = loadConfig()) {
       // Chain time, not wall time: renew() needs issuedAt <= block.timestamp and issuedAt above both
       // lastRenewed and renewalFloor (raised to "now" by revoke / fire / agent change). Right after a
       // revoke that can be one second ahead of the chain: the submitter waits until chain time >= issuedAt.
-      const block = await pub.getBlock({ blockTag: "latest" });
-      const [floor, m] = await Promise.all([read("renewalFloor", [owner], block.number), read("mandates", [owner], block.number)]);
+      const { block, floor, m } = await atOneBlock(async (block) => {
+        const [floor, m] = await Promise.all([read("renewalFloor", [owner], block.number), read("mandates", [owner], block.number)]);
+        return { block, floor, m };
+      });
       let issuedAt = block.timestamp;
       if (BigInt(floor) + 1n > issuedAt) issuedAt = BigInt(floor) + 1n;
       if (BigInt(m[2]) + 1n > issuedAt) issuedAt = BigInt(m[2]) + 1n;
@@ -75,13 +103,11 @@ export async function startServer(config: Config = loadConfig()) {
     },
 
     "GET /api/market": async () => {
-      let market: any = { open: true, label: "OPEN" };
-      try {
-        if (existsSync(config.marketFile)) market = JSON.parse(readFileSync(config.marketFile, "utf8"));
-      } catch {}
-      const block = await pub.getBlock({ blockTag: "latest" });
-      const [price8, updatedAt] = (await read("price", [], block.number)) as bigint[];
-      return { ...market, oraclePrice: Number(price8) / 1e8, updatedAt: Number(updatedAt), chainTs: Number(block.timestamp), priceAge: Number(block.timestamp - updatedAt) };
+      const market = await readJsonFile(config.marketFile, { open: true, label: "OPEN" });
+      return atOneBlock(async (block) => {
+        const [price8, updatedAt] = (await read("price", [], block.number)) as bigint[];
+        return { ...market, oraclePrice: Number(price8) / 1e8, updatedAt: Number(updatedAt), chainTs: Number(block.timestamp), priceAge: Number(block.timestamp - updatedAt) };
+      });
     },
   };
 

@@ -117,10 +117,12 @@ export function rules(s: State, m: MandateCfg): Decision {
 }
 
 function holdReason(s: State) {
-  if (s.revoked) return `Mandate revoked: I may only reduce risk. LTV ${pct(s.ltvBps)} is fine; holding.`;
-  if (s.authority === 0n) return `Authority has decayed to zero (renew with World ID to restore it). LTV ${pct(s.ltvBps)}; holding.`;
-  if (!s.market.open) return `Weekend, LTV ${pct(s.ltvBps)} is within your limit; holding.`;
-  return `LTV ${pct(s.ltvBps)}, authority ${usd(s.authority)} USDG vs debt ${usd(s.debt)}; nothing to do.`;
+  const l = `LTV ${pct(s.ltvBps)}`;
+  if (s.revoked) return `Revoked; the agent can only reduce risk. ${l}, holding.`;
+  if (s.lastRenewed === 0n) return `Waiting for a World ID renewal; the agent can only reduce risk. ${l}, holding.`;
+  if (s.authority === 0n) return `Authority has decayed to zero; the agent can only reduce risk. ${l}, holding.`;
+  if (!s.market.open) return `Weekend, ${l} is within your limit; holding.`;
+  return `${l}, authority ${usd(s.authority)} USDG vs debt ${usd(s.debt)}; nothing to do.`;
 }
 
 // ------------------------------------------------------------------ models
