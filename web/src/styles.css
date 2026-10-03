@@ -475,3 +475,4 @@ section.feed { padding: 24px 28px 18px; display: flex; flex-direction: column; }
   .ltv__title { display: block; padding: 0 0 8px; }
   .ltv__liq { flex-wrap: wrap; }
 }
+.verified { white-space: nowrap; }
