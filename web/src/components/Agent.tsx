@@ -34,8 +34,8 @@ export function CeilingBar({ a, compact = false }: { a: Authority; compact?: boo
           <>
             <div className="ceiling__debt" style={{ left: `${debt}%` }} />
             <div className="ceiling__debtlbl num" style={{ left: `${Math.min(92, Math.max(8, debt))}%`, transform: debtShift }}>
-              {compact ? "Current debt" : `Your debt ${fmtUsd0(a.debt)}`}
-              <span>{compact ? fmtUsd0(a.debt) : `(${debt.toFixed(2)}%)`}</span>
+              {compact ? "Current debt" : "Your debt"}
+              <span style={{ color: "var(--ink)" }}>{fmtUsd0(a.debt)}</span>
             </div>
           </>
         )}
@@ -51,7 +51,6 @@ export function CeilingBar({ a, compact = false }: { a: Authority; compact?: boo
         {!compact && (
           <span className="ceiling__knoblbl" style={{ left: `${Math.min(90, Math.max(8, knob))}%` }}>
             Ceiling {fmtUsd0(a.ceiling)}
-            <span>({knob.toFixed(2)}%)</span>
           </span>
         )}
         {knob < 88 && <span className="hi">{fmtUsd0(a.base)}</span>}
