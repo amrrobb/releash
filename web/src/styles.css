@@ -484,3 +484,15 @@ section.feed { padding: 24px 28px 18px; display: flex; flex-direction: column; }
 .demo .figures .mid { font-size: 32px; }
 .demo .pagehead p.sub { margin-top: 2px; }
 .demo .txline { margin-top: 0; }
+.modelchip { display: inline-flex; align-items: center; height: 20px; padding: 0 8px; margin-left: 8px; border-radius: 999px; background: var(--sunk); border: 1px solid var(--line); font-size: 12px; color: var(--ink-2); cursor: help; }
+/* 44px hit areas for small inline links without changing layout (the /demo frame must not grow). */
+.feed__meta .link, .compare__addr, .scenario__result a, .account__menu a { position: relative; }
+.feed__meta .link::after, .compare__addr::after, .scenario__result a::after { content: ""; position: absolute; inset: -12px -6px; }
+.contracts .link { min-height: 44px; }
+.targets .link { min-height: 44px; }
+.shared-note { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 10px; font-size: 14px; color: var(--ink-3); }
+.feed__meta > span:first-child { white-space: nowrap; }
+.feed__meta .link { white-space: nowrap; }
+/* /demo: a status line must never add height to the 1920x1080 frame; it sits in the card's bottom padding. */
+.demo .actions-row { position: relative; }
+.demo .actions-row .txline { position: absolute; left: 0; top: calc(100% + 2px); margin: 0; }

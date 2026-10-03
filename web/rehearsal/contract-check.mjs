@@ -51,6 +51,20 @@ const small = await d.evaluate(() => [...document.querySelectorAll("button, a.bt
 }).map((e) => (e.textContent ?? "").trim().slice(0, 24)));
 ok(small.length === 0, `/demo buttons are >= 44px tall (${small.join(" | ")})`);
 
+// 44px targets on every route: the box itself, or an invisible ::after hit area around it.
+for (const [path, w] of [["/", 1440], ["/demo", 1440], ["/app", 1440], ["/security", 1440], ["/demo", 375], ["/app", 375]]) {
+  const pg = await open(path, w, 900);
+  const small = await pg.evaluate(() => [...document.querySelectorAll("a, button, summary")].filter((e) => {
+    const r = e.getBoundingClientRect();
+    if (!r.width || !r.height || getComputedStyle(e).visibility === "hidden") return false;
+    const a = getComputedStyle(e, "::after");
+    const extra = a.content !== "none" && a.position === "absolute" ? -(parseFloat(a.top) || 0) - (parseFloat(a.bottom) || 0) : 0;
+    return r.height + Math.max(0, extra) < 44;
+  }).map((e) => `${e.tagName.toLowerCase()}:${(e.textContent ?? "").trim().slice(0, 22)}(${Math.round(e.getBoundingClientRect().height)})`));
+  ok(small.length === 0, `${path}@${w} targets >= 44px (${small.slice(0, 6).join(" | ")})`);
+  await pg.close();
+}
+
 // Redirect and deep links.
 const r = await open("/?demo=1");
 ok(new URL(r.url()).pathname === "/demo", `/?demo=1 lands on /demo (got ${r.url()})`);

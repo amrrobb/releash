@@ -238,7 +238,7 @@ function PermissionsCard({ owner, state }: { owner?: Address; state?: VaultState
 
 /** A borrower's own dashboard: the connected wallet (or the demo account) is the borrower. */
 export function AppPage() {
-  const { address } = useSigner();
+  const { address, mode } = useSigner();
   const vault = useVault(address);
   const state = vault.data;
   return (
@@ -247,6 +247,7 @@ export function AppPage() {
         <div>
           <h1>My position</h1>
           <p className="sub">Manage your loan and your agent's permissions.</p>
+          {mode === "demo" && <p className="shared-note"><span className="chip">Shared demo account</span> You are signing as Alice, the public demo borrower. Changes here show up in the demo; connect your own wallet from the account menu.</p>}
         </div>
         <Market state={state} />
       </div>

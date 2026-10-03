@@ -20,9 +20,20 @@ const ICON: Partial<Record<Kind, [string, React.ReactElement]>> = {
   withdraw: ["grey", <ArrowUp />],
 };
 
+const CHOICE: Record<string, string> = { hold: "hold", borrow_more: "borrow more", deleverage_10: "delever 10%:", deleverage_30: "delever 30%:" };
+/** "Jev: hold 89%, borrow_more 9%, …" -> the model's top choice as a chip; the full distribution goes in the tooltip. */
+function jevTop(raw?: string): { top: string; all: string } | null {
+  const i = raw?.indexOf("Jev:") ?? -1;
+  if (!raw || i < 0) return null;
+  const all = raw.slice(i).replace(/\s*Not sent:.*$/, "").trim();
+  const m = all.match(/Jev:\s*([a-z_0-9]+)\s+(\d+%)/);
+  return m ? { top: `${CHOICE[m[1]] ?? m[1].replace(/_/g, " ")} ${m[2]}`, all } : null;
+}
+
 function Row({ it, pinned, full }: { it: Item & { count?: number }; pinned: boolean; full: boolean }) {
   const [tone, icon] = ICON[it.kind] ?? ["grey", <Doc />];
   const muted = it.kind === "hold" || it.kind === "skipped";
+  const jev = it.source.startsWith("JEV") ? jevTop(it.raw) : null;
   return (
     <li className={`feed__item${muted ? " feed__item--muted" : ""}`} data-testid={pinned ? "feed-pinned" : undefined} title={[it.effect, it.raw].filter(Boolean).join(" — ")}>
       <span className={`feed__icon feed__icon--${tone}`}>{icon}</span>
@@ -30,9 +41,12 @@ function Row({ it, pinned, full }: { it: Item & { count?: number }; pinned: bool
         <div className="feed__title num">{it.title}{it.count && it.count > 1 ? <span className="muted"> ×{it.count}</span> : null}</div>
         {it.detail && <p className="feed__detail">{it.detail}</p>}
         {it.effect && full && <p className="feed__effect num">{it.effect}</p>}
-        {full && it.raw && /Jev:/.test(it.raw) && <p className="feed__raw num">{it.raw.slice(it.raw.indexOf("Jev:")).replace(/\s*Not sent:.*$/, "")}</p>}
         <div className="feed__meta">
-          <span><span className="src">{it.source}</span> · <time className="num">{fmtClock(it.ts)}</time></span>
+          <span>
+            <span className="src">{it.source}</span>
+            {jev && <span className="modelchip num" title={jev.all}>{jev.top}</span>}
+            {" · "}<time className="num">{full ? fmtClock(it.ts) : fmtClock(it.ts).slice(0, 5)}</time>
+          </span>
           {it.txHash && EXPLORER && (
             <a className="link" href={`${EXPLORER}/tx/${it.txHash}`} target="_blank" rel="noreferrer">View transaction <ArrowUpRight /></a>
           )}

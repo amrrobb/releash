@@ -75,3 +75,11 @@ reset 19 s · renew 7.5 s (meter $9,270.89) · lever-up 1.6 s (debt 8,820) · bl
 debt 5,000.94 → 3,500.66) · final reset: first attempt failed in the backend ("borrow reverted": control re-borrow at 8,800 hit the
 LTV limit while the price was still ~$122), second attempt passed in 43 s (Alice debt 8,000, price 180).
 Post-gap /demo measured at 1920x1080: page bottom 1,044 px, no scrolling. `contract-check.mjs` ALL OK after every deploy.
+
+## Model chip run (4 Oct, 02:43–02:52 JST, `BEATS=2,3,6,7`, then `BEATS=9`): all pass
+Feed rows show the model's top choice as a chip next to the source ("JEV · borrow more 62%"); the full distribution is in the tooltip.
+Post-gap /demo at 1920x1080: page bottom 1,065 px, no scrolling; status lines sit in the card padding so they never add height.
+Reset failed once more on the first try ("borrow reverted", backend) and passed on the second (Alice debt 8,000, price 180).
+The 01–09 PNGs in this folder now show the redesigned UI; the older sections above describe the earlier dark UI.
+`axe-contrast.mjs`: no color-contrast violations on /, /demo, /app, /security at 1440 and 375. `contract-check.mjs`: ALL OK
+(test ids, pills, 1920x1080 fit, 44 px targets on all routes, deep links, no console errors).
