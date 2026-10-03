@@ -7,6 +7,7 @@ import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol
 import {EIP712} from "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import {SafeCast} from "@openzeppelin/contracts/utils/math/SafeCast.sol";
+import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {AggregatorV3Interface} from "./interfaces/AggregatorV3Interface.sol";
 import {IPool} from "./interfaces/IPool.sol";
 
@@ -280,7 +281,7 @@ contract ReleashVault is ReentrancyGuard, EIP712 {
     function liquidate(address owner, uint128 repayAmount) external nonReentrant {
         Position storage p = positions[owner];
         uint256 price = _price();
-        require(_ltvBps(p, price) > LIQ_THRESHOLD_BPS, Healthy());
+        require(_liquidatable(p, price), Healthy());
         require(repayAmount > 0, ZeroAmount());
         require(uint256(repayAmount) * BPS <= uint256(p.debt) * CLOSE_FACTOR_BPS, RepayTooLarge());
 
@@ -340,7 +341,7 @@ contract ReleashVault is ReentrancyGuard, EIP712 {
         value = uint256(p.collateral) * px / VALUE_SCALE;
         debt = p.debt;
         ltvBps = _ltvBps(p, px);
-        liquidatable = ltvBps > LIQ_THRESHOLD_BPS;
+        liquidatable = _liquidatable(p, px);
     }
 
     function renewalDigest(Renewal calldata r) public view returns (bytes32) {
@@ -363,17 +364,24 @@ contract ReleashVault is ReentrancyGuard, EIP712 {
         emit Borrowed(owner, msg.sender, amount, p.debt);
     }
 
+    /// @dev Compares by cross-multiplication so a rounded-down LTV can never let a borrow through.
     function _requireLtv(Position storage p, uint256 px) internal view {
-        uint256 ltv = _ltvBps(p, px);
-        require(ltv <= MAX_LTV_BPS, LtvExceeded(ltv));
+        uint256 value = uint256(p.collateral) * px / VALUE_SCALE;
+        require(uint256(p.debt) * BPS <= value * MAX_LTV_BPS, LtvExceeded(_ltvBps(p, px)));
     }
 
-    /// @dev type(uint256).max when there is debt but no collateral.
+    function _liquidatable(Position memory p, uint256 px) internal pure returns (bool) {
+        uint256 value = uint256(p.collateral) * px / VALUE_SCALE;
+        return uint256(p.debt) * BPS > value * LIQ_THRESHOLD_BPS;
+    }
+
+    /// @dev Rounded up, so a displayed LTV is never rosier than the truth. type(uint256).max when
+    /// there is debt but no collateral.
     function _ltvBps(Position memory p, uint256 px) internal pure returns (uint256) {
         if (p.debt == 0) return 0;
         uint256 value = uint256(p.collateral) * px / VALUE_SCALE;
         if (value == 0) return type(uint256).max;
-        return uint256(p.debt) * BPS / value;
+        return Math.ceilDiv(uint256(p.debt) * BPS, value);
     }
 
     function _price() internal view returns (uint256) {
