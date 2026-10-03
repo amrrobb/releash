@@ -1,0 +1,23 @@
+{
+  "name": "releash-agent",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.13"
+  },
+  "scripts": {
+    "loop": "tsx --env-file-if-exists=.env loop.ts",
+    "keeper": "tsx --env-file-if-exists=.env keeper.ts",
+    "setup": "tsx --env-file-if-exists=.env demo-setup.ts",
+    "liquidator": "tsx --env-file-if-exists=.env liquidator.ts",
+    "e2e": "tsx --env-file-if-exists=.env e2e.ts"
+  },
+  "dependencies": {
+    "viem": "^2.57.2"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.4",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
+  }
+}

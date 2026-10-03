@@ -1,0 +1,6 @@
+{
+  "default": {
+    "text": "Keep LTV under 45% over weekends; you may lever up to my authority when the market is open and calm. Never let me get liquidated.",
+    "weekendMaxLtvBps": 4500
+  }
+}
