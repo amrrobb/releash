@@ -1,0 +1,124 @@
+import type { Address } from "viem";
+import { EXPLORER } from "../config";
+import { useAgentLog, type AgentEntry } from "../lib/backend";
+import { fmtNum, fmtUsd, short } from "../lib/math";
+import { useEvents, type ChainEvent } from "../lib/reads";
+
+type Item = {
+  id: string;
+  ts: number;
+  tone: "ok" | "bad" | "info" | "dim";
+  source: "agent" | "chain";
+  title: string;
+  detail?: string;
+  txHash?: string;
+  count?: number;
+};
+
+const n = (v: unknown) => Number(v as bigint);
+
+function fromChain(e: ChainEvent, owner: Address): Item | null {
+  const a = e.args;
+  const byOwner = typeof a.by === "string" && a.by.toLowerCase() === owner.toLowerCase();
+  const who = byOwner ? "You" : "Agent";
+  const base = { id: e.id, ts: e.ts, source: "chain" as const, txHash: e.txHash };
+  switch (e.name) {
+    case "Borrowed":
+      return { ...base, tone: byOwner ? "dim" : "ok", title: `${who} borrowed ${fmtUsd(n(a.amount) / 1e6)}`, detail: `Debt now ${fmtUsd(n(a.newDebt) / 1e6)}` };
+    case "Deleveraged":
+      return { ...base, tone: "ok", title: `${who} deleveraged ${n(a.bps) / 100}%`, detail: `Sold ${fmtNum(n(a.collateralSold) / 1e18)} rNVDA, repaid ${fmtUsd(n(a.debtRepaid) / 1e6)}` };
+    case "Renewed":
+      return { ...base, tone: "ok", title: "Renewed with World ID", detail: "Authority refilled, decay clock restarted" };
+    case "Liquidated":
+      return { ...base, tone: "bad", title: "Liquidated", detail: `${fmtUsd(n(a.debtRepaid) / 1e6)} repaid, ${fmtNum(n(a.collateralSeized) / 1e18)} rNVDA seized` };
+    case "MandateSet":
+      return { ...base, tone: "info", title: `Mandate set: agent ${short(a.agent as string)}`, detail: `Ceiling ${fmtUsd(n(a.authorityBase) / 1e6)}` };
+    case "Revoked":
+      return { ...base, tone: "info", title: "Revoked", detail: "Agent can no longer add debt. Deleverage still allowed." };
+    case "Fired":
+      return { ...base, tone: "info", title: `Fired agent ${short(a.agent as string)}` };
+    case "Deposited":
+      return { ...base, tone: "dim", title: `Deposited ${fmtNum(n(a.amount) / 1e18)} rNVDA` };
+    case "Withdrawn":
+      return { ...base, tone: "dim", title: `Withdrew ${fmtNum(n(a.amount) / 1e18)} rNVDA` };
+    case "Repaid":
+      return { ...base, tone: "dim", title: `Repaid ${fmtUsd(n(a.amount) / 1e6)}`, detail: `Debt now ${fmtUsd(n(a.newDebt) / 1e6)}` };
+    default:
+      return null;
+  }
+}
+
+const ACTION_TITLE: Record<string, string> = {
+  hold: "Agent holds",
+  deleverage10: "Agent: deleverage 10%",
+  deleverage30: "Agent: deleverage 30%",
+  borrow: "Agent: borrow",
+};
+
+function fromAgent(e: AgentEntry): Item {
+  const title = (ACTION_TITLE[e.action] ?? `Agent: ${e.action}`) + (e.action === "borrow" && e.amount ? ` ${fmtUsd(e.amount)}` : "");
+  if (e.blocked)
+    return { id: `a-${e.id}`, ts: e.ts, source: "agent", tone: "bad", title: `${title} — blocked on-chain: ${e.error ?? "reverted"}`, detail: e.reason, txHash: e.txHash };
+  return { id: `a-${e.id}`, ts: e.ts, source: "agent", tone: e.action === "hold" ? "dim" : "info", title, detail: e.reason, txHash: e.txHash };
+}
+
+export function Feed({ owner }: { owner?: Address }) {
+  const log = useAgentLog(owner);
+  const events = useEvents(owner);
+
+  let items: Item[] = [];
+  if (owner) {
+    const chain = events.data ?? [];
+    // Deleverage and liquidation also emit Repaid in the same tx; show the specific event only.
+    const special = new Set(chain.filter((e) => e.name === "Deleveraged" || e.name === "Liquidated").map((e) => e.txHash));
+    items = [
+      ...chain.filter((e) => !(e.name === "Repaid" && special.has(e.txHash))).map((e) => fromChain(e, owner)).filter((x): x is Item => !!x),
+      ...(log.data ?? []).map(fromAgent),
+    ].sort((a, b) => b.ts - a.ts);
+    // Collapse runs of identical "hold" lines so the feed stays readable at one decision per 10 s.
+    const out: Item[] = [];
+    for (const it of items) {
+      const prev = out[out.length - 1];
+      if (prev && it.source === "agent" && prev.source === "agent" && it.tone === "dim" && prev.tone === "dim" && it.title === prev.title) {
+        prev.count = (prev.count ?? 1) + 1;
+        continue;
+      }
+      out.push({ ...it });
+    }
+    items = out.slice(0, 80);
+  }
+
+  return (
+    <section className="panel feed" aria-labelledby="feed-h">
+      <header className="panel__head">
+        <h2 id="feed-h">Agent feed</h2>
+        <span className={`dot ${log.isError ? "dot--off" : "dot--on"}`} title={log.isError ? "Agent log unavailable" : "Live"} />
+      </header>
+      {log.isError && <p className="quiet small notice">Agent log offline. Showing on-chain events only.</p>}
+      {!owner ? (
+        <p className="empty">Connect to see your agent's decisions.</p>
+      ) : items.length === 0 ? (
+        <p className="empty">Nothing yet. Decisions and on-chain events appear here as they happen.</p>
+      ) : (
+        <ol className="feed__list" data-testid="feed">
+          {items.map((it) => (
+            <li key={it.id} className={`feed__item feed__item--${it.tone}`}>
+              <time className="num">{new Date(it.ts * 1000).toLocaleTimeString("en-GB")}</time>
+              <div>
+                <div className="feed__title">
+                  {it.title}
+                  {it.count && it.count > 1 ? <span className="quiet"> ×{it.count}</span> : null}
+                </div>
+                {it.detail && <div className="feed__detail">{it.detail}</div>}
+                <div className="feed__meta">
+                  <span>{it.source === "chain" ? "on-chain" : "agent"}</span>
+                  {it.txHash && (EXPLORER ? <a href={`${EXPLORER}/tx/${it.txHash}`} target="_blank" rel="noreferrer" className="mono">{short(it.txHash)}</a> : <span className="mono">{short(it.txHash)}</span>)}
+                </div>
+              </div>
+            </li>
+          ))}
+        </ol>
+      )}
+    </section>
+  );
+}
