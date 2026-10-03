@@ -165,6 +165,7 @@ contract ReleashVaultTest is Base {
         assertEq(vault.authorityNow(alice), 0);
         // Same agent, new base: renewal survives.
         _mandate(alice, 9_000e6);
+        vm.warp(block.timestamp + 1);
         _renew(alice);
         _mandate(alice, 6_000e6);
         assertEq(vault.authorityNow(alice), 6_000e6);
@@ -353,5 +354,64 @@ contract ReleashVaultTest is Base {
         vm.prank(liquidator);
         vault.liquidate(bob, 1_000e6);
         assertEq(_debt(bob), 7_800e6);
+    }
+
+    // ------------------------------------------------------------ review regressions (docs/REVIEW-contracts.md)
+
+    function test_A1_usedRenewalNotReplayableAfterFireAndRehire() public {
+        _open(alice, 100e18, 4_000e6);
+        _mandate(alice, 8_000e6);
+        ReleashVault.Renewal memory r = _renewal(alice, uint64(block.timestamp));
+        bytes memory sig = _sign(r, signerPk);
+        vault.renew(r, sig);
+        vm.startPrank(alice);
+        vault.fire();
+        vault.setMandate(agent, 8_000e6);
+        vm.stopPrank();
+        vm.expectRevert(ReleashVault.RenewalNotNewer.selector);
+        vault.renew(r, sig);
+    }
+
+    function test_A1_renewalNotReplayableAfterAgentSwapBack() public {
+        _mandate(alice, 8_000e6);
+        ReleashVault.Renewal memory r = _renewal(alice, uint64(block.timestamp));
+        bytes memory sig = _sign(r, signerPk);
+        vault.renew(r, sig);
+        vm.warp(block.timestamp + 5);
+        vm.startPrank(alice);
+        vault.setMandate(bob, 8_000e6);
+        vault.setMandate(agent, 8_000e6);
+        vm.stopPrank();
+        vm.expectRevert(ReleashVault.RenewalNotNewer.selector);
+        vault.renew(r, sig);
+    }
+
+    function test_A2_revokeCancelsUnsubmittedRenewal() public {
+        _mandate(alice, 8_000e6);
+        _renew(alice);
+        vm.warp(block.timestamp + 10);
+        ReleashVault.Renewal memory pending = _renewal(alice, uint64(block.timestamp));
+        bytes memory sig = _sign(pending, signerPk);
+        vm.prank(alice);
+        vault.revoke();
+        vm.expectRevert(ReleashVault.RenewalNotNewer.selector);
+        vault.renew(pending, sig);
+        // A fresh proof after the revoke works.
+        vm.warp(block.timestamp + 1);
+        _renew(alice);
+        assertEq(vault.authorityNow(alice), 8_000e6);
+    }
+
+    function test_C2_cappedSeizeChargesOnlyWhatCollateralIsWorth() public {
+        _open(bob, 100e18, 9_000e6);
+        _setPrice(40e8); // collateral $4,000 against 9,000 debt: a 4,500 repay would seize 118 rNVDA
+        uint256 before = usdg.balanceOf(liquidator);
+        vm.prank(liquidator);
+        vault.liquidate(bob, 4_500e6);
+        assertEq(_col(bob), 0);
+        assertEq(nvda.balanceOf(liquidator), 100e18);
+        // $4,000 of collateral, bonus included, is worth 4,000 / 1.05 = 3,809.52 USDG of repayment.
+        assertEq(before - usdg.balanceOf(liquidator), 3_809_523_809);
+        assertEq(_debt(bob), 9_000e6 - 3_809_523_809);
     }
 }

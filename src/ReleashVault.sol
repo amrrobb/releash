@@ -84,6 +84,9 @@ contract ReleashVault is ReentrancyGuard, EIP712 {
 
     mapping(address owner => Position) public positions;
     mapping(address owner => Mandate) public mandates;
+    /// @notice A renewal must be issued strictly after this. Raised by revoke, fire and agent
+    /// changes, and never reset, so no signature issued before those can ever be submitted later.
+    mapping(address owner => uint64) public renewalFloor;
 
     // ---------------------------------------------------------------- events
 
@@ -190,6 +193,7 @@ contract ReleashVault is ReentrancyGuard, EIP712 {
         require(agent != address(0), ZeroAgent());
         Mandate storage m = mandates[msg.sender];
         if (m.agent != agent) {
+            if (m.agent != address(0)) renewalFloor[msg.sender] = uint64(block.timestamp);
             m.agent = agent;
             m.lastRenewed = 0;
         }
@@ -201,6 +205,7 @@ contract ReleashVault is ReentrancyGuard, EIP712 {
     /// @notice Stops the agent from adding debt, instantly. It can still deleverage.
     function revoke() external {
         mandates[msg.sender].revoked = true;
+        renewalFloor[msg.sender] = uint64(block.timestamp);
         emit Revoked(msg.sender);
     }
 
@@ -208,6 +213,7 @@ contract ReleashVault is ReentrancyGuard, EIP712 {
     function fire() external {
         address agent = mandates[msg.sender].agent;
         delete mandates[msg.sender];
+        renewalFloor[msg.sender] = uint64(block.timestamp);
         emit Fired(msg.sender, agent);
     }
 
@@ -221,10 +227,11 @@ contract ReleashVault is ReentrancyGuard, EIP712 {
         require(err == ECDSA.RecoverError.NoError && signer == worldSigner, BadSignature());
         Mandate storage m = mandates[r.owner];
         require(r.agent == m.agent && r.agent != address(0), AgentMismatch());
-        require(r.issuedAt > m.lastRenewed, RenewalNotNewer());
+        require(r.issuedAt > m.lastRenewed && r.issuedAt > renewalFloor[r.owner], RenewalNotNewer());
         require(r.issuedAt <= block.timestamp, RenewalFromFuture());
         require(block.timestamp <= r.deadline, RenewalExpired());
         m.lastRenewed = r.issuedAt;
+        renewalFloor[r.owner] = r.issuedAt;
         m.revoked = false;
         emit Renewed(r.owner, r.agent, r.issuedAt);
     }
@@ -286,7 +293,12 @@ contract ReleashVault is ReentrancyGuard, EIP712 {
         require(uint256(repayAmount) * BPS <= uint256(p.debt) * CLOSE_FACTOR_BPS, RepayTooLarge());
 
         uint256 seize = uint256(repayAmount) * VALUE_SCALE / price * (BPS + LIQ_BONUS_BPS) / BPS;
-        if (seize > p.collateral) seize = p.collateral;
+        if (seize > p.collateral) {
+            // Not enough collateral for the bonus: take all of it and charge only what it is worth.
+            seize = p.collateral;
+            repayAmount = (seize * price / VALUE_SCALE * BPS / (BPS + LIQ_BONUS_BPS)).toUint128();
+            require(repayAmount > 0, ZeroAmount());
+        }
 
         p.debt -= repayAmount;
         p.collateral -= seize.toUint128();
