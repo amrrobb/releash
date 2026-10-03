@@ -14,8 +14,7 @@ const keeper = wallet(key("KEEPER_PK"));
 export async function setPrice(priceUsd: number) {
   await setOracle(keeper, priceUsd);
   const pool = await rebalancePool(keeper, priceUsd);
-  const m = readMarket();
-  writeMarket({ ...m, open: true, label: "OPEN", price: priceUsd, fridayCloseAt: undefined });
+  writeMarket({ open: true, label: "OPEN", price: priceUsd });
   return { price: priceUsd, pool };
 }
 
