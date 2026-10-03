@@ -102,9 +102,9 @@ One page, wallet connect (injected), Robinhood testnet.
 
 ## 7. Demo story (3 min)
 
-1. Alice deposits 100 rNVDA ($180 each), borrows 8,000 USDG (44% LTV). Mandate: authority 9,000 USDG, half-life 120 s. Control borrows 8,800 by hand (at 8,000 a −35% gap stops at 68.4%, under the 70% line).
-2. Renews with World ID: meter fills. Agent levers up to 8,800 within authority (allowed).
-3. Agent tries to borrow beyond authority → blocked by the contract on-chain (red).
+1. Alice deposits 100 rNVDA ($180 each), borrows 8,000 USDG (44% LTV). Mandate: authority 9,500 USDG, half-life 120 s (authority falls ~40 USDG/s right after a renewal, so the agent has ~15 s to reach 8,800; it acts on the Renewed event within ~1 s). Control borrows 8,800 by hand (at 8,000 a −35% gap stops at 68.4%, under the 70% line).
+2. Renews with World ID: meter fills. Agent levers up to ~8,800 (its 49% LTV cap) within authority (allowed).
+3. Agent tries to borrow 1,500 more (debt ~10,300 > authority) → blocked by the contract on-chain (red).
 4. Time passes: meter halves, halves again. Alice is "offline".
 5. Friday close: agent de-risks 30% before the weekend. Price frozen.
 6. Monday gap −35%: control position (same start, no agent) is liquidated. Alice's survives.

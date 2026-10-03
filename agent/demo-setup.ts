@@ -1,5 +1,5 @@
 /** Brings the two demo positions to a known start (idempotent, safe to re-run):
- *  - Alice: 100 rNVDA, 8,000 USDG debt, mandate(agent, 9,000 USDG)
+ *  - Alice: 100 rNVDA, 8,000 USDG debt, mandate(agent, 9,500 USDG): ~15 s after a renewal to lever to 8,800
  *  - Control: 100 rNVDA, CONTROL_DEBT (default 8,800) USDG debt, no mandate
  * Control starts at 8,800, the debt Alice's agent levers her to, so both carry the same exposure into
  * the Monday gap. With 8,000 the control sits at 68.4% LTV after a -35% gap: below the 70% threshold,
@@ -15,7 +15,7 @@ const E6 = 10n ** 6n;
 const COLLATERAL = 100n * E18;
 const ALICE_DEBT = BigInt(process.env.ALICE_DEBT ?? 8000) * E6;
 const CONTROL_DEBT = BigInt(process.env.CONTROL_DEBT ?? 8800) * E6;
-const AUTHORITY = BigInt(process.env.AUTHORITY ?? 9000) * E6;
+const AUTHORITY = BigInt(process.env.AUTHORITY ?? 9500) * E6;
 
 const read = (address: Address, abi: any, functionName: string, args: unknown[] = []) => pub.readContract({ address, abi, functionName, args }) as Promise<any>;
 
@@ -52,10 +52,15 @@ export async function setup() {
   const control = wallet(key("CONTROL_PK"));
   const liq = wallet(key("LIQUIDATOR_PK"));
 
-  if (LOCAL) {
-    for (const w of [keeper, agent, alice, control, liq]) {
-      const b = await pub.getBalance({ address: w.account.address });
+  for (const w of [keeper, agent, alice, control, liq]) {
+    const b = await pub.getBalance({ address: w.account.address });
+    if (LOCAL) {
       if (b < parseEther("100")) await pub.request({ method: "anvil_setBalance" as any, params: [w.account.address, "0x56BC75E2D63100000"] as any }); // 100 ETH
+    } else if (w !== keeper && b < parseEther(process.env.GAS_FLOOR ?? "0.0003")) {
+      // Public testnet: top up gas from the keeper (deployer). ~2e-6 ETH per tx at 0.01 gwei.
+      const hash = await keeper.sendTransaction({ to: w.account.address, value: parseEther(process.env.GAS_TOPUP ?? "0.0005") } as any);
+      await pub.waitForTransactionReceipt({ hash });
+      console.log(`gas top-up ${w.account.address}: ${hash}`);
     }
   }
 

@@ -61,7 +61,7 @@ async function main() {
   const s0 = await setup();
   console.log(JSON.stringify(s0));
   const st0 = await readState(A);
-  beat("setup: Alice 100 rNVDA / 8,000 USDG, mandate 9,000", st0.debt === 8000_000000n && st0.authorityBase === 9000_000000n, `LTV ${pct(st0.ltvBps)}, authority ${n6(st0.authority)} (not renewed for this mandate yet)`);
+  beat("setup: Alice 100 rNVDA / 8,000 USDG, mandate 9,500", st0.debt === 8000_000000n && st0.authorityBase === 9500_000000n, `LTV ${pct(st0.ltvBps)}, authority ${n6(st0.authority)} (not renewed for this mandate yet)`);
 
   console.log("== renew via backend (WORLD_SIMULATE)");
   const srv = await backend();
@@ -90,7 +90,7 @@ async function main() {
 
   console.log("== agent levers up within authority");
   const e1: any = await step(agent, A, { useModel });
-  beat("agent levers up within authority (~8,800)", e1.action === "borrow" && !e1.blocked && BigInt(e1.result?.Borrowed?.newDebt ?? 0) >= 8_700_000000n, `+${n6(e1.result?.Borrowed?.amount)} USDG -> debt ${n6(e1.result?.Borrowed?.newDebt)} (authority was ${e1.state.authority}) [${e1.source}]`);
+  beat("agent levers up within authority (~8,800)", e1.action === "borrow" && !e1.blocked && BigInt(e1.result?.Borrowed?.newDebt ?? 0) >= 8_800_000000n, `+${n6(e1.result?.Borrowed?.amount)} USDG -> debt ${n6(e1.result?.Borrowed?.newDebt)} (authority was ${e1.state.authority}) [${e1.source}]`);
 
   txs.push(["agent borrow (within authority)", e1.txHash]);
   console.log("== agent tries beyond authority");
@@ -105,7 +105,7 @@ async function main() {
   if (SKIP_DECAY) {
     // Zero authority without waiting 3 half-lives: fire and re-appoint, which leaves the mandate unrenewed.
     await send(alice, dep.vault, vaultAbi, "fire", []);
-    await send(alice, dep.vault, vaultAbi, "setMandate", [agent.account.address, 9000_000000n]);
+    await send(alice, dep.vault, vaultAbi, "setMandate", [agent.account.address, 9500_000000n]);
     decay.push("skipped (E2E_SKIP_DECAY=1): mandate re-appointed unrenewed");
   } else {
     if (!LOCAL) console.log(`waiting ${3 * dep.halfLife}s of real time for 3 half-lives...`);

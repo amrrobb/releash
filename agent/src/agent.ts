@@ -1,4 +1,5 @@
-import { appendFileSync, existsSync, readFileSync } from "node:fs";
+import { appendFileSync, existsSync, readFileSync, renameSync, writeFileSync } from "node:fs";
+import { dirname } from "node:path";
 import { decodeEventLog, encodeFunctionData, getAddress, type Address, type Hash, type TransactionReceipt } from "viem";
 import { AGENT_DIR, CHAIN_ID, LOCAL, allErrorsAbi, decodeError, dep, jsonSafe, poolAbi, pub, vaultAbi, settle, sleep, withNonceRetry, type Wallet } from "./chain.js";
 import { readMarket, type Market } from "./market.js";
@@ -17,7 +18,7 @@ export type Decision = {
   action: Action;
   amount?: bigint; // USDG, 6 dec (borrow only)
   reason: string;
-  source: "guard" | "mandate" | "jev" | "claude" | "rules" | "manual";
+  source: "guard" | "mandate" | "jev" | "claude" | "rules" | "manual" | "cached";
   jev?: { choice: string; confidence: number; probabilities: Record<string, number> };
   overridden?: string;
 };
@@ -176,11 +177,30 @@ async function askJev(s: State, m: MandateCfg, apiKey: string) {
 }
 
 const CLAUDE_MIN_INTERVAL_S = Number(process.env.CLAUDE_MIN_INTERVAL_S ?? 60);
+const CLAUDE_DAILY_CAP = Number(process.env.CLAUDE_DAILY_CAP ?? 20);
+const CLAUDE_BUDGET_FILE = process.env.CLAUDE_BUDGET_FILE ?? `${dirname(LOG_FILE)}/claude-budget.${CHAIN_ID}.json`;
 const lastClaude = new Map<string, number>();
+/** Hard cap on Claude calls per UTC day across restarts (credit is tiny). Fails closed: unreadable = spent. */
+function takeClaudeBudget(): boolean {
+  const day = new Date().toISOString().slice(0, 10);
+  let b = { day, count: 0 };
+  try {
+    if (existsSync(CLAUDE_BUDGET_FILE)) b = JSON.parse(readFileSync(CLAUDE_BUDGET_FILE, "utf8"));
+  } catch {
+    return false;
+  }
+  if (b.day !== day) b = { day, count: 0 };
+  if (b.count >= CLAUDE_DAILY_CAP) return false;
+  b.count++;
+  writeFileSync(`${CLAUDE_BUDGET_FILE}.tmp`, JSON.stringify(b));
+  renameSync(`${CLAUDE_BUDGET_FILE}.tmp`, CLAUDE_BUDGET_FILE);
+  return true;
+}
 async function askClaude(s: State, m: MandateCfg, apiKey: string): Promise<Decision> {
   const k = s.owner.toLowerCase();
   const now = Date.now() / 1000;
   if (now - (lastClaude.get(k) ?? 0) < CLAUDE_MIN_INTERVAL_S) throw new Error(`claude budget: at most one call per ${CLAUDE_MIN_INTERVAL_S}s per owner`);
+  if (!takeClaudeBudget()) throw new Error(`claude budget: daily cap of ${CLAUDE_DAILY_CAP} calls reached`);
   lastClaude.set(k, now);
   const res = await fetch(`${OR}/v1/chat/completions`, {
     method: "POST",
@@ -217,6 +237,22 @@ function jevReason(s: State, a: Action, j: { confidence: number; probabilities: 
 }
 
 /** Guard first, then the model (Jev, Claude if Jev is unsure or down), then deterministic mandate checks. */
+/** Model calls cost credit: ask again only when the state moved materially. */
+const MODEL_REFRESH_S = Number(process.env.MODEL_REFRESH_S ?? 60);
+type Snap = { ltvBps: number; bucket: number; open: boolean; revoked: boolean; lastRenewed: bigint; at: number; d: Decision };
+const modelCache = new Map<string, Snap>();
+const bucketOf = (s: State) => (s.authority === 0n || s.authorityBase === 0n ? 0 : 1 + Number((s.authority * 4n) / (s.authorityBase + 1n)));
+function material(s: State, c: Snap | undefined) {
+  if (!c) return "first look";
+  if (s.lastRenewed !== c.lastRenewed) return "new World renewal";
+  if (Math.abs(s.ltvBps - c.ltvBps) >= 50) return "LTV moved";
+  if (bucketOf(s) !== c.bucket) return "authority bucket changed";
+  if (s.market.open !== c.open) return "market changed";
+  if (s.revoked !== c.revoked) return "revoke changed";
+  if (Date.now() / 1000 - c.at >= MODEL_REFRESH_S) return "refresh";
+  return null;
+}
+
 export async function decide(s: State, opts: { useModel?: boolean } = {}): Promise<Decision> {
   const g = guard(s);
   if (g) return g;
@@ -225,6 +261,20 @@ export async function decide(s: State, opts: { useModel?: boolean } = {}): Promi
   const useModel = (opts.useModel ?? true) && !!apiKey && process.env.AGENT_SOURCE !== "rules";
   if (!useModel) return rules(s, m);
 
+  const key = s.owner.toLowerCase();
+  const cached = modelCache.get(key);
+  const why = material(s, cached);
+  let d: Decision;
+  if (!why && cached) {
+    d = { ...cached.d, source: "cached", amount: undefined };
+  } else {
+    d = await askModel(s, m, apiKey!);
+    modelCache.set(key, { ltvBps: s.ltvBps, bucket: bucketOf(s), open: s.market.open, revoked: s.revoked, lastRenewed: s.lastRenewed, at: Date.now() / 1000, d });
+  }
+  return finalize(s, m, d, why === "new World renewal");
+}
+
+async function askModel(s: State, m: MandateCfg, apiKey: string): Promise<Decision> {
   let d: Decision;
   try {
     const j = await askJev(s, m, apiKey!);
@@ -247,9 +297,17 @@ export async function decide(s: State, opts: { useModel?: boolean } = {}): Promi
       d = rules(s, m);
     }
   }
+  return d;
+}
+
+function finalize(s: State, m: MandateCfg, d: Decision, freshRenewal: boolean): Decision {
   // The mandate's hard constraints win over the model.
   const mr = mandateRule(s, m);
   if (mr && d.action !== "deleverage30" && d.action !== mr.action) return { ...mr, jev: d.jev, overridden: `${d.source}:${d.action}` };
+  // The mandate grants leverage up to the renewed authority while the market is open: right after a
+  // World renewal the agent uses it at once (authority starts decaying from the proof).
+  if (freshRenewal && d.action === "hold" && s.market.open && !s.revoked && borrowRoom(s) >= MIN_BORROW)
+    d = { ...d, action: "borrow", reason: `Fresh World renewal and the market is open: levering up within your authority as the mandate allows. ${d.reason}`, overridden: `${d.source}:hold` };
   if (d.action === "borrow") {
     const room = borrowRoom(s);
     if (!s.market.open) return { action: "hold", reason: "The model wanted to borrow, but the market is closed and your mandate says no leverage over the weekend.", source: "mandate", jev: d.jev, overridden: `${d.source}:borrow` };
@@ -339,6 +397,18 @@ export async function act(w: Wallet, owner: Address, d: Decision, s: State): Pro
   return o;
 }
 
+const HOLD_LOG_S = Number(process.env.HOLD_LOG_S ?? 300);
+const lastLogged = new Map<string, { action: string; at: number }>();
+/** Holds are logged when they follow a different action, or every HOLD_LOG_S: the feed stays readable. */
+function logDecision(entry: Record<string, any>) {
+  const k = String(entry.owner).toLowerCase();
+  const prev = lastLogged.get(k);
+  const now = Date.now() / 1000;
+  if (entry.action === "hold" && !entry.txHash && prev?.action === "hold" && now - prev.at < HOLD_LOG_S) return;
+  lastLogged.set(k, { action: entry.action, at: now });
+  log(entry);
+}
+
 export function log(entry: Record<string, unknown>) {
   appendFileSync(LOG_FILE, JSON.stringify(jsonSafe(entry)) + "\n");
 }
@@ -367,7 +437,7 @@ export async function step(w: Wallet, owner: Address, opts: { decision?: Decisio
   const s = await readState(owner);
   if (s.agent.toLowerCase() !== w.account.address.toLowerCase()) {
     const entry = { ts: new Date().toISOString(), owner, state: summarize(s), action: "hold", reason: s.agent === "0x0000000000000000000000000000000000000000" ? "No mandate: this borrower has not appointed an agent." : `Mandate names another agent (${s.agent}).`, source: "rules" };
-    log(entry);
+    logDecision(entry);
     return entry;
   }
   const d = opts.decision ?? (await decide(s, { useModel: opts.useModel }));
@@ -389,7 +459,8 @@ export async function step(w: Wallet, owner: Address, opts: { decision?: Decisio
     skipped: o.skipped,
     retriedWith: o.retriedWith,
   };
-  log(entry);
+  if (opts.decision) log(entry); // manual attempts always show
+  else logDecision(entry);
   return entry;
 }
 

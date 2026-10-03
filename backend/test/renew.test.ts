@@ -9,6 +9,7 @@ import { privateKeyToAccount } from "viem/accounts";
 import { foundry } from "viem/chains";
 import { loadConfig } from "../src/config.js";
 import { startServer } from "../src/server.js";
+import { openStore } from "../src/store.js";
 
 const env = { ...process.env, WORLD_SIMULATE: "1", PORT: "0", DB_PATH: join(mkdtempSync(join(tmpdir(), "releash-")), "t.db") };
 const config = loadConfig(env);
@@ -72,14 +73,19 @@ test("backend signature is accepted by the deployed vault; tampering and replay 
   assert.equal(await revertName(() => pub.simulateContract({ account: ownerB.account, address: vault, abi, functionName: "renew", args: [r, signature] })), "RenewalNotNewer");
 });
 
-test("one human, one owner: the same nullifier cannot renew a second owner", async () => {
-  const res = await renewCall(ownerB.account.address, human);
-  assert.equal(res.status, 409, await res.clone().text());
+test("simulate mode: the simulator's shared nullifier does not lock out a second owner", async () => {
+  const res = await renewCall(ownerB.account.address, human); // same nullifier ownerA sent
+  assert.equal(res.status, 200, await res.clone().text());
+  assert.equal((await res.json()).simulated, true);
 });
 
-test("a different human cannot renew an owner that already has one", async () => {
-  const res = await renewCall(ownerA.account.address, `${human}bb`);
-  assert.equal(res.status, 409);
+test("real proofs: one owner one human, one human one owner (store binding)", () => {
+  const store = openStore(":memory:");
+  assert.equal(store.bindHuman("0xn1", "0xA", "proof_of_human", false), null);
+  assert.equal(store.bindHuman("0xn1", "0xA", "proof_of_human", false), null, "same human renews again");
+  assert.match(String(store.bindHuman("0xn2", "0xA", "proof_of_human", false)), /already has its human/);
+  assert.match(String(store.bindHuman("0xn1", "0xB", "proof_of_human", false)), /another account/);
+  store.close();
 });
 
 test("renew for an agent the mandate does not name is refused before signing", async () => {

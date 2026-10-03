@@ -38,20 +38,31 @@ export async function gap(pct: number) {
   return { before, after, pool };
 }
 
+/** Cosmetic random walk while OPEN. Gas matters on a public chain: one setPrice per TICK_MS (120 s),
+ * skipped when the move is under TICK_MIN_MOVE (0.2%); the pool is only re-synced when it has drifted
+ * more than POOL_DRIFT (2%) from the oracle (agent deleverage tolerates 15%). */
 async function tick() {
-  const ms = Number(process.env.TICK_MS ?? 15_000);
+  const ms = Number(process.env.TICK_MS ?? 120_000);
+  const minMove = Number(process.env.TICK_MIN_MOVE ?? 0.002);
+  const drift = Number(process.env.POOL_DRIFT ?? 0.02);
+  console.log(`keeper tick every ${ms} ms, min move ${minMove * 100}%, pool resync above ${drift * 100}% drift`);
   for (;;) {
     const m = readMarket();
     if (m.open) {
-      const { price8 } = await oraclePrice();
-      const p = Math.round((Number(price8) / 1e8) * (1 + (Math.random() - 0.5) * 0.01) * 100) / 100;
       try {
-        await setOracle(keeper, p);
-        await rebalancePool(keeper, p);
-        // close() may have landed while those txs mined: only update the price, never reopen.
-        const now = readMarket();
-        if (now.open) writeMarket({ ...now, price: p });
-        console.log(`${new Date().toISOString()} tick ${p}`);
+        const { price8 } = await oraclePrice();
+        const cur = Number(price8) / 1e8;
+        const p = Math.round(cur * (1 + (Math.random() - 0.5) * 0.01) * 100) / 100;
+        if (Math.abs(p - cur) / cur < minMove) console.log(`${new Date().toISOString()} tick skipped (${cur} -> ${p} is under ${minMove * 100}%)`);
+        else {
+          await setOracle(keeper, p);
+          const pool = await poolPrice();
+          if (Math.abs(pool - p) / p > drift) await rebalancePool(keeper, p);
+          // close() may have landed while those txs mined: only update the price, never reopen.
+          const now = readMarket();
+          if (now.open) writeMarket({ ...now, price: p });
+          console.log(`${new Date().toISOString()} tick ${p} (pool ${pool.toFixed(2)})`);
+        }
       } catch (e) {
         console.error("tick failed:", (e as any).shortMessage ?? e, (e as any).details ?? "");
       }

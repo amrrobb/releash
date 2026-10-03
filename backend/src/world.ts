@@ -47,8 +47,10 @@ async function verifyWithPortal(result: any, world: World) {
 export async function verifyHuman(world: World, store: Store, owner: string, result: any): Promise<{ nullifier: string; credential: string; simulated: boolean }> {
   const signal = owner.toLowerCase();
   if (world.simulate) {
-    const nullifier = String(result?.responses?.[0]?.nullifier ?? keccak256(toHex(`releash-simulated-human:${signal}`)));
-    console.warn(`[WORLD_SIMULATE] portal verification SKIPPED for ${owner}; nullifier ${nullifier.slice(0, 12)}…`);
+    // World's simulator returns the same nullifier for everyone, so binding it would let only the first
+    // owner ever renew. Simulated humans get a synthetic per-owner nullifier; real proofs keep the binding.
+    const nullifier = keccak256(toHex(`releash-simulated-human:${signal}`));
+    console.warn(`[WORLD_SIMULATE] portal verification SKIPPED for ${owner}; synthetic nullifier ${nullifier.slice(0, 12)}…`);
     return { nullifier, credential: "simulated", simulated: true };
   }
   requireWorld(world);
