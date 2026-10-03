@@ -1,0 +1,26 @@
+{
+  "take": "hero-3",
+  "site": "https://releash.robbyn.xyz/",
+  "flashes": [
+    {
+      "name": "start",
+      "wall": 1791054320316
+    },
+    {
+      "name": "end",
+      "wall": 1791054333015
+    }
+  ],
+  "beats": {
+    "hero": {
+      "start": 1791054321823,
+      "effect": 1791054321823,
+      "scroll": 1791054327828,
+      "end": 1791054332994,
+      "data": {
+        "h1": "Step away. Keep risk in check.",
+        "meter": "n/a"
+      }
+    }
+  }
+}

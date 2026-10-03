@@ -20,13 +20,13 @@ export const Captions: React.FC<{ cues: Cue[] }> = ({ cues }) => {
           fontWeight: 600,
           fontSize: 44,
           lineHeight: 1.3,
-          color: C.text,
+          color: "#ffffff",
           textAlign: "center",
-          background: "rgba(10, 12, 11, 0.9)",
-          border: `1px solid ${C.line2}`,
+          background: "rgba(11, 13, 16, 0.88)",
+          border: "1px solid rgba(255,255,255,0.08)",
           borderRadius: 18,
           padding: "16px 34px",
-          boxShadow: "0 12px 40px rgba(0,0,0,0.5)",
+          boxShadow: "0 12px 40px rgba(16,24,40,0.25)",
           textWrap: "balance",
         }}
       >

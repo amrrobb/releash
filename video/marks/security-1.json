@@ -1,0 +1,28 @@
+{
+  "take": "security-1",
+  "site": "https://releash.robbyn.xyz/security",
+  "flashes": [
+    {
+      "name": "start",
+      "wall": 1791054282458
+    },
+    {
+      "name": "end",
+      "wall": 1791054293206
+    }
+  ],
+  "beats": {
+    "security": {
+      "start": 1791054283965,
+      "effect": 1791054283965,
+      "scroll": 1791054286971,
+      "end": 1791054293183,
+      "data": {
+        "rules": "Enforced by the contract 01 Borrowing has a ceiling Agent debt cannot exceed its current authority. 02 Authority decays The ceiling halves over time and expires after three half-lives. 03 Repayment stays available Decay and revoke do not remove the agent's right to reduce debt. 04 No admin can move your position The contract enforces the allowed actions.",
+        "contracts": "Deployed contracts Robinhood Chain Testnet Contract Deployment Reference ReleashVault Testnet 0xD346…5D50 ✓ Verified USDG Mock token View on explorer ✓ Verified rNVDA Mock token View on explorer ✓ Verified NVDA/USD feed Mock feed View on explorer ✓ Verified rNVDA/USDG pool Mock pool View on explorer ✓ Verified",
+        "verified": 5,
+        "scrollTarget": 294
+      }
+    }
+  }
+}

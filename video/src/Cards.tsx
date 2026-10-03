@@ -13,9 +13,9 @@ const Bg: React.FC<{ children: React.ReactNode; tone?: "green" | "red" | "none" 
     style={{
       background:
         tone === "red"
-          ? `radial-gradient(ellipse at 50% 30%, rgba(255,80,0,0.10), transparent 60%), ${C.bg}`
+          ? `radial-gradient(ellipse at 50% 30%, rgba(196,43,28,0.06), transparent 60%), ${C.bg}`
           : tone === "green"
-            ? `radial-gradient(ellipse at 50% 30%, rgba(0,200,5,0.09), transparent 60%), ${C.bg}`
+            ? `radial-gradient(ellipse at 50% 30%, rgba(58,166,76,0.08), transparent 60%), ${C.bg}`
             : C.bg,
       color: C.text,
       fontFamily: SANS,
@@ -26,11 +26,15 @@ const Bg: React.FC<{ children: React.ReactNode; tone?: "green" | "red" | "none" 
 );
 
 export const Logo: React.FC<{ size?: number }> = ({ size = 64 }) => (
-  <div style={{ display: "inline-flex", alignItems: "center", gap: size * 0.36, fontWeight: 800, fontSize: size, letterSpacing: "-0.02em" }}>
-    <svg width={size * 1.1} height={size * 1.1} viewBox="0 0 24 24" fill="none" stroke={C.green} strokeWidth="2.4" strokeLinecap="round">
-      <path d="M5 19c0-8 6-14 14-14" />
-      <circle cx="19" cy="5" r="1.6" fill={C.green} stroke="none" />
-      <path d="M5 19h6" />
+  <div style={{ display: "inline-flex", alignItems: "center", gap: size * 0.3, fontWeight: 700, fontSize: size, letterSpacing: "-0.03em", color: C.ink }}>
+    {/* The app's wordmark glyph (web/src/components/icons.tsx). */}
+    <svg width={size * 1.05} height={size * 1.05} viewBox="0 0 32 32" fill="none" stroke={C.ink} strokeWidth="2.6" strokeLinecap="round">
+      <circle cx="9" cy="23" r="4.2" />
+      <circle cx="22" cy="8" r="3.4" />
+      <circle cx="24.5" cy="22.5" r="3" />
+      <path d="M12.2 20.2L19.6 10.6" />
+      <path d="M13.2 23.4h8.2" />
+      <path d="M23.4 11.3l.8 8.2" />
     </svg>
     Releash
   </div>
@@ -53,19 +57,19 @@ export const ColdOpen: React.FC = () => {
         <div style={{ opacity: appear(f, 0, 0.4) }}>
           <Eyebrow>Chainlink {feed.description.replace(/"/g, "")} · Robinhood Chain mainnet (4663)</Eyebrow>
         </div>
-        <div style={{ background: "#060807", border: `1px solid ${C.line2}`, borderRadius: 20, overflow: "hidden", boxShadow: "0 30px 80px rgba(0,0,0,0.6)" }}>
-          <div style={{ display: "flex", gap: 10, padding: "16px 22px", borderBottom: `1px solid ${C.line}` }}>
+        <div style={{ background: "#060807", border: `1px solid ${C.line2}`, borderRadius: 20, overflow: "hidden", boxShadow: "0 20px 50px rgba(16,24,40,0.18)" }}>
+          <div style={{ display: "flex", gap: 10, padding: "16px 22px", borderBottom: "1px solid #222826" }}>
             {["#3a403d", "#3a403d", "#3a403d"].map((c, i) => <span key={i} style={{ width: 14, height: 14, borderRadius: 7, background: c }} />)}
           </div>
-          <div style={{ padding: "30px 38px", fontFamily: MONO, fontSize: 30, lineHeight: 1.6 }}>
-            <div><span style={{ color: C.green }}>$ </span>{typed}<span style={{ opacity: f % 30 < 15 && typed.length < cmd.length ? 1 : 0 }}>▍</span></div>
+          <div style={{ padding: "30px 38px", fontFamily: MONO, fontSize: 30, lineHeight: 1.6, color: "#edf1ee" }}>
+            <div><span style={{ color: "#3aa64c" }}>$ </span>{typed}<span style={{ opacity: f % 30 < 15 && typed.length < cmd.length ? 1 : 0 }}>▍</span></div>
             {feed.lines.map((l, i) => {
               const o = appear(f, 2.7 + i * 0.18, 0.2);
               const isUpd = i === 3;
               return (
-                <div key={i} style={{ opacity: o, display: "flex", gap: 40, color: isUpd ? C.text : C.muted, background: isUpd ? `rgba(242,179,61,${0.16 * hl})` : "transparent", margin: "0 -14px", padding: "0 14px", borderRadius: 8 }}>
+                <div key={i} style={{ opacity: o, display: "flex", gap: 40, color: isUpd ? "#edf1ee" : "#929b96", background: isUpd ? `rgba(242,179,61,${0.18 * hl})` : "transparent", margin: "0 -14px", padding: "0 14px", borderRadius: 8 }}>
                   <span style={{ width: 600 }}>{l.split(" ")[0]}</span>
-                  <span style={{ color: isUpd ? C.amber : C.dim }}>{labels[i]}</span>
+                  <span style={{ color: isUpd ? "#f2b33d" : "#5f6863" }}>{labels[i]}</span>
                 </div>
               );
             })}
@@ -132,7 +136,7 @@ export const Freeze: React.FC = () => {
             );
           })}
           {/* the feed's own heartbeat */}
-          <div style={{ position: "absolute", left: 470 + 36 + (BAR * 24) / MAXH, top: -26, bottom: -40, borderLeft: `3px dashed ${C.text}`, opacity: hb }}>
+          <div style={{ position: "absolute", left: 470 + 36 + (BAR * 24) / MAXH, top: -26, bottom: -40, borderLeft: `3px dashed ${C.muted}`, opacity: hb }}>
             <div style={{ position: "absolute", bottom: -14, left: 12, fontSize: 26, color: C.text, whiteSpace: "nowrap", fontWeight: 600 }}>24 h heartbeat</div>
           </div>
         </div>
@@ -161,7 +165,7 @@ export const Weekend: React.FC = () => {
             const s = spring({ frame: f - Math.round((0.3 + i * 1.6) * fps), fps, config: { damping: 200 } });
             const last = i === DAYS.length - 1;
             return (
-              <div key={d.day} style={{ flex: 1, opacity: s, transform: `translateY(${(1 - s) * 40}px)`, background: last ? "rgba(255,80,0,0.08)" : C.surface, border: `1px solid ${last ? C.red : C.line2}`, borderRadius: 24, padding: "44px 44px 52px", minHeight: 420 }}>
+              <div key={d.day} style={{ flex: 1, opacity: s, transform: `translateY(${(1 - s) * 40}px)`, background: last ? C.redSoft : C.surface, border: `1px solid ${last ? C.red : C.line2}`, borderRadius: 24, padding: "44px 44px 52px", minHeight: 420 }}>
                 <div style={{ fontFamily: MONO, fontSize: 32, color: d.tone }}>{d.day}</div>
                 <div style={{ fontSize: 60, fontWeight: 800, marginTop: 26, letterSpacing: "-0.02em", color: last ? C.red : C.text }}>{d.title}</div>
                 <div style={{ fontSize: 34, color: C.muted, marginTop: 22, lineHeight: 1.4 }}>{d.body}</div>

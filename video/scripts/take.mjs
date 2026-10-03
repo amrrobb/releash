@@ -33,7 +33,7 @@ if (existsSync(OUT_MARKS) && !process.env.FORCE) throw new Error(`${OUT_MARKS} e
 const dep = JSON.parse(readFileSync(`${ROOT}/deployments/46630.json`, "utf8"));
 const RPC = "https://rpc.testnet.chain.robinhood.com";
 const ALICE = "0x454a7cBDc89474dfD4bC7d0A8536eDF1378ED991";
-const SITE_URL = process.env.SITE ?? "https://releash.robbyn.xyz/?demo=1";
+const SITE_URL = process.env.SITE ?? "https://releash.robbyn.xyz/demo";
 const W = 1920, H = 1080;
 
 const cast = (sig, args = "") => execSync(`cast call ${dep.vault} "${sig}" ${args} --rpc-url ${RPC}`, { encoding: "utf8" }).trim().split("\n").map((l) => l.split(" ")[0]);
@@ -172,7 +172,7 @@ function assertUntouched(where) {
   return m;
 }
 
-await page.goto(SITE_URL, { waitUntil: "networkidle" });
+await page.goto(SITE_URL, { waitUntil: "load", timeout: 90_000 });
 await page.getByTestId("address").waitFor({ timeout: 30000 });
 await page.waitForTimeout(2000);
 await flash("start");
@@ -209,8 +209,13 @@ await beat("intro", async () => {
   return { t: { effect: t0 }, data: { delta, pills: [pa, pc], meter, equityAlice: await text("equity-releash"), equityControl: await text("equity-control"), market: await text("market") } };
 });
 
+// The agent can borrow within a second of the renewal, so the lever-up is judged against the state BEFORE the
+// renew click (feed lines and debt), not against the state when the lever beat starts.
+let preRenewFeed = [], preRenewDebt = 0;
 await beat("renew", async () => {
   await scrollTo(0);
+  preRenewFeed = await feedTexts();
+  preRenewDebt = pos(ALICE).debt;
   const c = await click("simulate");
   await page.locator(".renew .txstatus--ok").waitFor({ timeout: 120_000 }).catch(async () => {
     throw new Error(await page.locator(".renew .txstatus, .renew [role=alert]").first().innerText().catch(() => "no confirmation"));
@@ -227,9 +232,11 @@ await beat("renew", async () => {
 });
 
 await beat("lever", async () => {
-  const before = await feedTexts();
-  const debt0 = pos(ALICE).debt;
+  const before = preRenewFeed;
+  const debt0 = preRenewDebt;
   const hit = await waitFeed(/Agent borrowed/, before, 150_000);
+  // If the line was already there when this beat started, the effect time is the beat start (it landed during
+  // the renew beat's tail); the clip plan starts the lever clip at the beat start either way.
   const eff = now();
   if (!hit) throw new Error(`no lever-up within 150 s (chain debt ${pos(ALICE).debt})`);
   await page.waitForTimeout(1200);
@@ -337,27 +344,25 @@ await beat("gap", async () => {
 });
 
 await beat("revoke", async () => {
-  const before = await feedTexts();
   const c = await click("revoke");
   await page.locator(".mandate .txstatus--ok").waitFor({ timeout: 120_000 });
   const revokedAt = now();
   const m = mandate(ALICE);
   if (!m.revoked) throw new Error("chain says not revoked");
   const canAdd = await text("can-add");
-  // Keep the meter, Revoke and the feed in one frame.
-  const top = await page.evaluate(() => document.querySelector("section.authority").getBoundingClientRect().top + window.scrollY - 70);
-  await scrollTo(top);
+  await scrollTo(0);
+  // The revoke is the beat. A deleverage after it is shown only if it really happens: whether the guard fires
+  // depends on where the LTV sits after the gap, so it is recorded as an optional `trim` event, judged by the
+  // chain debt falling (feed text alone can change in place when the agent's reason merges in).
   const d0 = pos(ALICE).debt;
-  const hit = await waitFeed(/[Dd]eleveraged/, before, 90_000);
-  const eff = now();
-  if (!hit) throw new Error(`no deleverage within 90 s of revoke (debt ${d0})`);
-  await page.waitForTimeout(1500);
+  const trimAt = await until(async () => (pos(ALICE).debt < d0 - 0.01 ? now() : null), 45_000, 1500);
   const d1 = pos(ALICE).debt;
-  if (!(d1 < d0)) throw new Error(`chain debt ${d0} -> ${d1}`);
+  await page.waitForTimeout(2500);
   const pin = await pinned();
+  const feed = trimAt ? (await feedTexts())[0]?.replace(/\s+/g, " ") ?? "" : "";
   const rr = await rects();
-  await page.waitForTimeout(3500);
-  return { t: { click: c, revoked: revokedAt, effect: eff }, rects: rr, data: { chainRevoked: m.revoked, canAdd, feed: hit, pinned: pin, guardReason: /without asking the model/.test(hit), chainDebt: [d0, d1] } };
+  await page.waitForTimeout(trimAt ? 2000 : 0);
+  return { t: { click: c, revoked: revokedAt, effect: revokedAt, ...(trimAt ? { trim: trimAt } : {}) }, rects: rr, data: { chainRevoked: m.revoked, canAdd, trimmed: !!trimAt, feed, pinned: pin, chainDebt: [d0, d1] } };
 });
 
 await beat("revokedAttempt", async () => {

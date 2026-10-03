@@ -53,7 +53,7 @@ const SkipChip: React.FC<{ text: string }> = ({ text }) => {
   const f = useCurrentFrame();
   const o = interpolate(f, [0, 6, 2.2 * FPS, 2.6 * FPS], [0, 1, 1, 0], { extrapolateRight: "clamp" });
   return (
-    <div style={{ position: "absolute", top: 40, right: 48, opacity: o, fontFamily: MONO, fontSize: 30, color: C.text, background: "rgba(10,12,11,0.9)", border: `1px solid ${C.line2}`, borderRadius: 999, padding: "10px 22px" }}>
+    <div style={{ position: "absolute", top: 40, right: 48, opacity: o, fontFamily: MONO, fontSize: 30, color: "#fff", background: "rgba(11,13,16,0.88)", border: "none", borderRadius: 999, padding: "10px 22px" }}>
       ✂ {text}
     </div>
   );
@@ -83,8 +83,8 @@ const LiveChip: React.FC<{ text: string }> = ({ text }) => {
   const f = useCurrentFrame();
   const o = interpolate(f, [0, 8, 3.2 * FPS, 3.8 * FPS], [0, 1, 1, 0], { extrapolateRight: "clamp" });
   return (
-  <div style={{ opacity: o, position: "absolute", top: 40, left: 48, display: "flex", alignItems: "center", gap: 12, fontFamily: SANS, fontWeight: 700, fontSize: 24, letterSpacing: "0.06em", textTransform: "uppercase", color: C.text, background: "rgba(10,12,11,0.9)", border: `1px solid ${C.line2}`, borderRadius: 999, padding: "10px 22px" }}>
-    <span style={{ width: 12, height: 12, borderRadius: 6, background: C.green, boxShadow: `0 0 12px ${C.green}` }} />
+  <div style={{ opacity: o, position: "absolute", top: 40, left: 48, display: "flex", alignItems: "center", gap: 12, fontFamily: SANS, fontWeight: 700, fontSize: 24, letterSpacing: "0.06em", textTransform: "uppercase", color: "#fff", background: "rgba(11,13,16,0.88)", border: "none", borderRadius: 999, padding: "10px 22px" }}>
+    <span style={{ width: 12, height: 12, borderRadius: 6, background: "#3aa64c" }} />
     {text}
   </div>
   );

@@ -12,7 +12,7 @@ import { execFileSync, spawnSync } from "node:child_process";
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
 
 const VIDEO = new URL("..", import.meta.url).pathname.replace(/\/$/, "");
-const TAKE = process.env.TAKE ?? "1";
+const TAKE = process.env.TAKE ?? "4";
 const OUT = `${VIDEO}/public/capture`;
 mkdirSync(OUT, { recursive: true });
 
@@ -90,9 +90,11 @@ sliceTake(`${VIDEO}/marks/take-${TAKE}.json`, `${VIDEO}/captures/take-${TAKE}.we
   revoke: { beat: "revoke", from: (b) => b.click - 2 * S, to: (b) => b.end },
   revokedAttempt: { beat: "revokedAttempt", from: (b) => b.click - 2 * S, to: (b) => b.end },
 });
-// The landing-page take (scripts/hero.mjs). hero-2 was filmed in the reset state; the first hero take ran during
-// take 1 and showed a filled meter under the hero, so it is not used.
-const HERO = process.env.HERO ?? "hero-2";
+// The landing-page take (scripts/hero.mjs) and the /security pan (scripts/security.mjs), both read-only.
+// hero-3 and security-1 are on the redesigned light UI (web at 6f05fed).
+const HERO = process.env.HERO ?? "hero-3";
 sliceTake(`${VIDEO}/marks/${HERO}.json`, `${VIDEO}/captures/${HERO}.webm`, { hero: { beat: "hero", from: (b) => b.start, to: (b) => b.end } });
+const SEC = process.env.SEC ?? "security-1";
+sliceTake(`${VIDEO}/marks/${SEC}.json`, `${VIDEO}/captures/${SEC}.webm`, { security: { beat: "security", from: (b) => b.start, to: (b) => b.end } });
 writeFileSync(`${VIDEO}/src/clips.json`, JSON.stringify(clips, null, 2) + "\n");
 console.log(`\nwrote src/clips.json with ${Object.keys(clips).length} clips`);
