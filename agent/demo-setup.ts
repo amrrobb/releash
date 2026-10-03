@@ -6,9 +6,10 @@
  * nothing to liquidate.
  * Also: price 180 + pool at the oracle, market OPEN, vault liquidity topped up, gas on anvil. */
 import { parseEther, type Address } from "viem";
-import { dep, key, LOCAL, pub, send, stockAbi, usdgAbi, vaultAbi, wallet, fmt, type Wallet } from "./src/chain.js";
+import { dep, key, LOCAL, pub, send, sleep, stockAbi, usdgAbi, vaultAbi, wallet, fmt, type Wallet } from "./src/chain.js";
 import { isMain } from "./src/main.js";
 import { setPrice } from "./keeper.js";
+import { pauseKeeper, resumeKeeper, rebalancePool, setOracle } from "./src/market.js";
 
 const E18 = 10n ** 18n;
 const E6 = 10n ** 6n;
@@ -45,7 +46,38 @@ async function reconcile(w: Wallet, debtTarget: bigint) {
   return { owner: me, collateral: fmt(c, 18), debt: fmt(d) };
 }
 
+const START_PRICE = Number(process.env.START_PRICE ?? 180);
+
+/** Re-runnable: every step reads the chain and only does what is still missing. Order matters:
+ * price and pool first (receipts awaited), positions only against the restored price. */
 export async function setup() {
+  const t0 = Date.now();
+  pauseKeeper(10 * 60_000);
+  // A tick that passed its pause check just before this may still be sending: let it land first.
+  if (!LOCAL) await sleep(Number(process.env.RESET_TICK_DRAIN_MS ?? 8000));
+  try {
+    return await setupInner(t0);
+  } finally {
+    resumeKeeper();
+  }
+}
+
+/** Reads the vault's own price (what borrow checks) until it is the start price; re-sets it if a
+ * stray writer moved it. Throws rather than borrowing against the wrong price. */
+async function ensurePrice(keeper: Wallet) {
+  const want = BigInt(Math.round(START_PRICE * 1e8));
+  for (let i = 0; i < 4; i++) {
+    const [p8] = (await read(dep.vault, vaultAbi, "price")) as bigint[];
+    if (p8 === want) return;
+    console.warn(`reset: vault price ${Number(p8) / 1e8}, expected ${START_PRICE}; setting it again`);
+    await setOracle(keeper, START_PRICE);
+    await rebalancePool(keeper, START_PRICE);
+    if (!LOCAL) await sleep(1500);
+  }
+  throw new Error(`reset: vault price is not ${START_PRICE} after 4 attempts`);
+}
+
+async function setupInner(t0: number) {
   const keeper = wallet(key("KEEPER_PK"));
   const agent = wallet(key("AGENT_PK"));
   const alice = wallet(key("ALICE_PK"));
@@ -64,8 +96,10 @@ export async function setup() {
     }
   }
 
-  // Price 180 + pool + market OPEN (also makes the price fresh for borrow).
-  await setPrice(180);
+  // 1-2. Price + keeper reference + pool, market OPEN (also makes the price fresh for borrow).
+  await setPrice(START_PRICE);
+  await ensurePrice(keeper);
+  const tPrice = Date.now();
 
   // Vault liquidity: each run strands debt in the demo positions.
   const liquidity = (await read(dep.usdg, usdgAbi, "balanceOf", [dep.vault])) as bigint;
@@ -78,8 +112,11 @@ export async function setup() {
   // Control first: it must have no agent.
   const [controlAgent] = (await read(dep.vault, vaultAbi, "mandates", [control.account.address])) as [Address];
   if (controlAgent !== "0x0000000000000000000000000000000000000000") await send(control, dep.vault, vaultAbi, "fire", []);
+  // 3. Positions, each against the price read back from the vault.
+  await ensurePrice(keeper);
   const c = await reconcile(control, CONTROL_DEBT);
 
+  await ensurePrice(keeper);
   const a = await reconcile(alice, ALICE_DEBT);
   // Fresh mandate: an earlier renewal or revoke must not carry over, so the demo starts unrenewed.
   const [aAgent, , aRenewed, aRevoked] = (await read(dep.vault, vaultAbi, "mandates", [alice.account.address])) as [Address, bigint, bigint, boolean];
@@ -87,7 +124,8 @@ export async function setup() {
     await send(alice, dep.vault, vaultAbi, "fire", []);
   await send(alice, dep.vault, vaultAbi, "setMandate", [agent.account.address, AUTHORITY]);
 
-  return { alice: a, control: c, agent: agent.account.address, liquidator: liq.account.address, authorityBase: fmt(AUTHORITY) };
+  const timings = { priceAndPoolS: Math.round((tPrice - t0) / 1000), totalS: Math.round((Date.now() - t0) / 1000) };
+  return { alice: a, control: c, agent: agent.account.address, liquidator: liq.account.address, authorityBase: fmt(AUTHORITY), price: START_PRICE, timings };
 }
 
 if (isMain(import.meta.url)) {

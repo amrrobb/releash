@@ -5,7 +5,7 @@ import { AGENT_DIR, CHAIN_ID, LOCAL, dep, feedAbi, poolAbi, pub, send, stockAbi,
 export const MARKET_FILE = process.env.MARKET_FILE ?? `${AGENT_DIR}${LOCAL ? "market.json" : `market.${CHAIN_ID}.json`}`;
 
 /** anchor: the price the keeper's walk reverts to (set by `price`/reset and by a demo gap). */
-export type Market = { open: boolean; label: "OPEN" | "WEEKEND"; fridayCloseAt?: number; mondayOpenAt?: number; price: number; anchor?: number };
+export type Market = { open: boolean; label: "OPEN" | "WEEKEND"; fridayCloseAt?: number; mondayOpenAt?: number; price: number; anchor?: number; keeperPausedUntil?: number };
 
 /** Bounded, mean-reverting walk: pull 20% of the way back to the anchor, add up to +-0.5% noise,
  * clamp to anchor +-5%. Unattended for days the price stays where the demo left it, so the agent
@@ -31,6 +31,19 @@ export function readMarket(): Market {
 export function writeMarket(m: Market) {
   writeFileSync(`${MARKET_FILE}.tmp`, JSON.stringify(m, null, 2));
   renameSync(`${MARKET_FILE}.tmp`, MARKET_FILE);
+}
+
+/** The keeper tick and a demo reset both write the price with the same key: the reset pauses the tick
+ * (wall-clock ms; expires on its own if a reset dies half way). */
+export function keeperPaused(m = readMarket()) {
+  return (m.keeperPausedUntil ?? 0) > Date.now();
+}
+export function pauseKeeper(ms: number) {
+  writeMarket({ ...readMarket(), keeperPausedUntil: Date.now() + ms });
+}
+export function resumeKeeper() {
+  const { keeperPausedUntil: _, ...m } = readMarket();
+  writeMarket(m as Market);
 }
 
 /** Oracle price in USD (8 dec on chain). */
