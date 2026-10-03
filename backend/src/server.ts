@@ -40,9 +40,14 @@ export async function startServer(config: Config = loadConfig()) {
       const refused = store.bindHuman(human.nullifier, owner, human.credential, human.simulated);
       if (refused) throw bad(409, refused);
 
-      // Chain time, not wall time: renew() checks issuedAt against block.timestamp.
+      // Chain time, not wall time: renew() needs issuedAt <= block.timestamp and issuedAt above both
+      // lastRenewed and renewalFloor (raised to "now" by revoke / fire / agent change). Right after a
+      // revoke that can be one second ahead of the chain: the submitter waits until chain time >= issuedAt.
       const block = await pub.getBlock({ blockTag: "latest" });
-      const issuedAt = block.timestamp;
+      const [floor, m] = await Promise.all([read("renewalFloor", [owner], block.number), read("mandates", [owner], block.number)]);
+      let issuedAt = block.timestamp;
+      if (BigInt(floor) + 1n > issuedAt) issuedAt = BigInt(floor) + 1n;
+      if (BigInt(m[2]) + 1n > issuedAt) issuedAt = BigInt(m[2]) + 1n;
       const renewal = { owner, agent, issuedAt, deadline: issuedAt + BigInt(config.deadlineSeconds) };
       const signature = await signer.signTypedData({
         domain: { name: "Releash", version: "1", chainId: config.chainId, verifyingContract: vault },
@@ -51,7 +56,7 @@ export async function startServer(config: Config = loadConfig()) {
         message: renewal,
       });
       console.log(`renewal signed for ${owner} (agent ${agent}) issuedAt ${issuedAt}${human.simulated ? " [SIMULATED human]" : ` [${human.credential}]`}`);
-      return { renewal: { owner, agent, issuedAt: issuedAt.toString(), deadline: renewal.deadline.toString() }, signature, simulated: human.simulated };
+      return { renewal: { owner, agent, issuedAt: issuedAt.toString(), deadline: renewal.deadline.toString() }, signature, simulated: human.simulated, chainTs: block.timestamp.toString(), submitAfter: issuedAt.toString() };
     },
 
     "GET /api/agent/log": async (_b, q) => {

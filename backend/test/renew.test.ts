@@ -86,3 +86,21 @@ test("renew for an agent the mandate does not name is refused before signing", a
   const res = await fetch(`${srv.url}/api/renew`, { method: "POST", body: JSON.stringify({ owner: ownerA.account.address, agent: ownerB.account.address, idkitResult: {} }) });
   assert.equal(res.status, 400);
 });
+
+test("revoke then immediate renew succeeds once chain time reaches issuedAt", async () => {
+  // ownerA was renewed above; revoke raises renewalFloor to this second.
+  const rv = await ownerA.writeContract({ address: vault, abi, functionName: "revoke", args: [] });
+  await pub.waitForTransactionReceipt({ hash: rv });
+  const floor = (await pub.readContract({ address: vault, abi, functionName: "renewalFloor", args: [ownerA.account.address] })) as bigint;
+  const res = await renewCall(ownerA.account.address, human);
+  assert.equal(res.status, 200, await res.clone().text());
+  const { renewal, signature } = await res.json();
+  const r = { owner: renewal.owner, agent: renewal.agent, issuedAt: BigInt(renewal.issuedAt), deadline: BigInt(renewal.deadline) };
+  assert.ok(r.issuedAt > floor, `issuedAt ${r.issuedAt} must be above renewalFloor ${floor}`);
+  while ((await pub.getBlock({ blockTag: "latest" })).timestamp < r.issuedAt) await new Promise((ok) => setTimeout(ok, 200));
+  const hash = await ownerB.writeContract({ address: vault, abi, functionName: "renew", args: [r, signature] });
+  assert.equal((await pub.waitForTransactionReceipt({ hash })).status, "success");
+  const m = (await pub.readContract({ address: vault, abi, functionName: "mandates", args: [ownerA.account.address] })) as any[];
+  assert.equal(m[2], r.issuedAt);
+  assert.equal(m[3], false, "renew clears revoked");
+});

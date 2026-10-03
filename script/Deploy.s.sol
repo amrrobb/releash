@@ -11,7 +11,7 @@ import {MockPool} from "../src/mocks/MockPool.sol";
 import {IPool} from "../src/interfaces/IPool.sol";
 
 /// @notice Deploys the demo stack and seeds liquidity.
-/// Env: DEPLOYER_PK, WORLD_SIGNER, KEEPER (defaults to deployer), HALF_LIFE (default 60).
+/// Env: DEPLOYER_PK, WORLD_SIGNER, KEEPER (defaults to deployer), HALF_LIFE (default 120).
 contract Deploy is Script {
     int256 constant START_PRICE = 180e8; // $180
 
@@ -20,7 +20,7 @@ contract Deploy is Script {
         address deployer = vm.addr(pk);
         address worldSigner = vm.envAddress("WORLD_SIGNER");
         address keeper = vm.envOr("KEEPER", deployer);
-        uint256 halfLife = vm.envOr("HALF_LIFE", uint256(60));
+        uint256 halfLife = vm.envOr("HALF_LIFE", uint256(120));
 
         vm.startBroadcast(pk);
         MockUSDG usdg = new MockUSDG();

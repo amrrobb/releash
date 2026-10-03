@@ -1,6 +1,6 @@
 import { appendFileSync, existsSync, readFileSync } from "node:fs";
 import { decodeEventLog, encodeFunctionData, getAddress, type Address, type Hash, type TransactionReceipt } from "viem";
-import { AGENT_DIR, allErrorsAbi, decodeError, dep, jsonSafe, poolAbi, pub, vaultAbi, type Wallet } from "./chain.js";
+import { AGENT_DIR, allErrorsAbi, decodeError, dep, jsonSafe, poolAbi, pub, vaultAbi, settle, sleep, type Wallet } from "./chain.js";
 import { readMarket, type Market } from "./market.js";
 
 export const LOG_FILE = process.env.AGENT_LOG ?? `${AGENT_DIR}log.jsonl`;
@@ -30,6 +30,16 @@ export function mandateFor(owner: Address): MandateCfg {
 
 /** Everything the agent looks at, read at ONE block so the numbers belong together. */
 export async function readState(owner: Address) {
+  for (let i = 0; ; i++) {
+    try {
+      return await readStateOnce(owner);
+    } catch (e) {
+      if (i >= 4) throw e; // a load-balanced node may not have the block yet
+      await sleep(700);
+    }
+  }
+}
+async function readStateOnce(owner: Address) {
   const blockNumber = await pub.getBlockNumber({ cacheTime: 0 }); // viem caches it per pollingInterval
   const block = await pub.getBlock({ blockNumber });
   const r = (functionName: string, args: unknown[] = []) =>
@@ -64,7 +74,7 @@ export async function readState(owner: Address) {
     market: readMarket(),
   };
 }
-export type State = Awaited<ReturnType<typeof readState>>;
+export type State = Awaited<ReturnType<typeof readStateOnce>>;
 
 /** How much the agent may add right now: up to its authority (less a few seconds of decay so the tx
  * still fits when mined) and never above LEVER_CAP_BPS LTV. */
@@ -272,6 +282,7 @@ async function call(w: Wallet, functionName: string, args: unknown[], broadcastO
     const { request } = await pub.simulateContract({ account: w.account, address: dep.vault, abi: [...vaultAbi, ...allErrorsAbi], functionName, args } as any);
     const hash = await w.writeContract(request as any);
     const receipt = await pub.waitForTransactionReceipt({ hash });
+    await settle();
     if (receipt.status !== "success") return { txHash: hash, blocked: true, error: { name: "Reverted", shortMessage: "reverted when mined", args: undefined, details: undefined } };
     return { txHash: hash, result: events(receipt) };
   } catch (err) {
@@ -283,6 +294,7 @@ async function call(w: Wallet, functionName: string, args: unknown[], broadcastO
       try {
         txHash = await w.sendTransaction({ to: dep.vault, data: encodeFunctionData({ abi: vaultAbi, functionName, args } as any), gas: 300_000n } as any);
         await pub.waitForTransactionReceipt({ hash: txHash });
+        await settle();
       } catch (e) {
         console.warn(`broadcast of refused tx failed: ${decodeError(e).shortMessage}`);
       }

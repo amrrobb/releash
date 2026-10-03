@@ -11,7 +11,7 @@ import {
   BaseError,
   ContractFunctionRevertedError,
 } from "viem";
-import { privateKeyToAccount } from "viem/accounts";
+import { privateKeyToAccount, nonceManager } from "viem/accounts";
 
 export const ROOT = fileURLToPath(new URL("../..", import.meta.url));
 export const AGENT_DIR = fileURLToPath(new URL("..", import.meta.url));
@@ -65,17 +65,42 @@ export function key(name: keyof typeof ANVIL_KEYS | string): Hex {
   if (!v) throw new Error(`${name} is required on chain ${CHAIN_ID}`);
   return v as Hex;
 }
+/** On a load-balanced public RPC a node may not have applied our last tx yet: track nonces locally
+ * (one wallet object per key per process), and give nodes a moment after each receipt. */
+const wallets = new Map<string, any>();
 export function wallet(pk: Hex) {
-  return createWalletClient({ account: privateKeyToAccount(pk), chain, transport: http(RPC_URL), pollingInterval });
+  const hit = wallets.get(pk);
+  if (hit) return hit as ReturnType<typeof mk>;
+  const w = mk(pk);
+  wallets.set(pk, w);
+  return w;
 }
+function mk(pk: Hex) {
+  const account = LOCAL ? privateKeyToAccount(pk) : privateKeyToAccount(pk, { nonceManager });
+  return createWalletClient({ account, chain, transport: http(RPC_URL), pollingInterval });
+}
+export const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+const SETTLE_MS = Number(process.env.SETTLE_MS ?? (LOCAL ? 0 : 1500));
+export const settle = () => (SETTLE_MS ? sleep(SETTLE_MS) : Promise.resolve());
 export type Wallet = ReturnType<typeof wallet>;
 
 /** Sends a contract call after simulating it; waits for the receipt. Throws on revert. */
 export async function send(w: Wallet, address: Address, abi: Abi, functionName: string, args: unknown[]) {
-  const { request } = await pub.simulateContract({ account: w.account, address, abi, functionName, args } as any);
+  let request: any;
+  // A lagging node can refuse a call that depends on our previous tx (allowance, balance): retry.
+  for (let i = 0; ; i++) {
+    try {
+      ({ request } = await pub.simulateContract({ account: w.account, address, abi, functionName, args } as any));
+      break;
+    } catch (e) {
+      if (LOCAL || i >= 4) throw e;
+      await sleep(1000);
+    }
+  }
   const hash = await w.writeContract(request as any);
   const receipt = await pub.waitForTransactionReceipt({ hash });
   if (receipt.status !== "success") throw new Error(`${functionName} reverted in ${hash}`);
+  await settle();
   return receipt;
 }
 
