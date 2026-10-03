@@ -23,17 +23,24 @@ export function RenewWorldId({ owner, agent, disabled }: { owner?: Address; agen
     if (!owner || !agent) return;
     setStage("Verifying proof…");
     try {
-      const out = await api<RenewalResponse>("/api/renew", { owner, agent, idkitResult });
-      setStage("Submitting renewal…");
-      const r = out.renewal;
-      await tx.run("renew", [
-        {
-          address: DEPLOYMENT.vault,
-          abi: ABI.vault,
-          functionName: "renew",
-          args: [{ owner: r.owner, agent: r.agent, issuedAt: BigInt(r.issuedAt), deadline: BigInt(r.deadline) }, out.signature],
-        },
-      ]);
+      // renew() reverts RenewalNotNewer when a revoke, fire or agent change landed in the same second
+      // (renewalFloor moved). One fresh signature from the backend usually clears it.
+      for (let i = 0; i < 2; i++) {
+        const out = await api<RenewalResponse>("/api/renew", { owner, agent, idkitResult });
+        setStage("Submitting renewal…");
+        const r = out.renewal;
+        const fail = await tx.attempt("renew", [
+          {
+            address: DEPLOYMENT.vault,
+            abi: ABI.vault,
+            functionName: "renew",
+            args: [{ owner: r.owner, agent: r.agent, issuedAt: BigInt(r.issuedAt), deadline: BigInt(r.deadline) }, out.signature],
+          },
+        ]);
+        if (!fail || fail.name !== "RenewalNotNewer") break;
+        if (i === 1) tx.setError({ name: "RenewalNotNewer", message: "Renewal superseded — try again." });
+        else await new Promise((res) => setTimeout(res, 1100)); // let the chain clock pass the floor
+      }
     } catch (e) {
       setErr(e instanceof BackendError && e.status === 0 ? "Backend unreachable: cannot verify World ID right now." : (e as Error).message);
     } finally {

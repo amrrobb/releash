@@ -13,6 +13,7 @@ type Item = {
   detail?: string;
   txHash?: string;
   count?: number;
+  effect?: string;
 };
 
 const n = (v: unknown) => Number(v as bigint);
@@ -71,10 +72,24 @@ export function Feed({ owner }: { owner?: Address }) {
     const chain = events.data ?? [];
     // Deleverage and liquidation also emit Repaid in the same tx; show the specific event only.
     const special = new Set(chain.filter((e) => e.name === "Deleveraged" || e.name === "Liquidated").map((e) => e.txHash));
-    items = [
-      ...chain.filter((e) => !(e.name === "Repaid" && special.has(e.txHash))).map((e) => fromChain(e, owner)).filter((x): x is Item => !!x),
-      ...(log.data ?? []).map(fromAgent),
-    ].sort((a, b) => b.ts - a.ts);
+    const agentItems = (log.data ?? []).map(fromAgent);
+    // An agent decision and the on-chain event it caused share a tx: show one line, reason + effect.
+    const chainItems = chain
+      .filter((e) => !(e.name === "Repaid" && special.has(e.txHash)))
+      .map((e) => fromChain(e, owner))
+      .filter((x): x is Item => !!x);
+    const byTx = new Map(chainItems.filter((c) => c.txHash && c.tone !== "dim").map((c) => [c.txHash!.toLowerCase(), c]));
+    const merged = new Set<string>();
+    for (const a of agentItems) {
+      const c = a.txHash && a.tone !== "bad" ? byTx.get(a.txHash.toLowerCase()) : undefined;
+      if (!c) continue;
+      merged.add(c.id);
+      a.tone = c.tone;
+      a.title = c.title;
+      a.effect = c.detail;
+      a.source = "chain";
+    }
+    items = [...chainItems.filter((c) => !merged.has(c.id)), ...agentItems].sort((a, b) => b.ts - a.ts);
     // Collapse runs of identical "hold" lines so the feed stays readable at one decision per 10 s.
     const out: Item[] = [];
     for (const it of items) {
@@ -110,8 +125,9 @@ export function Feed({ owner }: { owner?: Address }) {
                   {it.count && it.count > 1 ? <span className="quiet"> ×{it.count}</span> : null}
                 </div>
                 {it.detail && <div className="feed__detail">{it.detail}</div>}
+                {it.effect && <div className="feed__detail feed__effect num">{it.effect}</div>}
                 <div className="feed__meta">
-                  <span>{it.source === "chain" ? "on-chain" : "agent"}</span>
+                  <span>{it.effect ? "agent · on-chain" : it.source === "chain" ? "on-chain" : "agent"}</span>
                   {it.txHash && (EXPLORER ? <a href={`${EXPLORER}/tx/${it.txHash}`} target="_blank" rel="noreferrer" className="mono">{short(it.txHash)}</a> : <span className="mono">{short(it.txHash)}</span>)}
                 </div>
               </div>

@@ -29,6 +29,8 @@ export const BACKEND_URL: string = (env.VITE_BACKEND_URL ?? "http://127.0.0.1:87
 export const WORLD_APP_ID: string = env.VITE_WORLD_APP_ID ?? "";
 export const WORLD_SIMULATE = env.VITE_WORLD_SIMULATE === "1";
 export const DEMO_PK = (env.VITE_DEMO_PK || undefined) as Hex | undefined;
+/** Optional: prefills the mandate form with the agent the demo runs. */
+export const AGENT_ADDRESS = (env.VITE_AGENT_ADDRESS || undefined) as Address | undefined;
 export const CONTROL_OWNER = (env.VITE_CONTROL_OWNER || undefined) as Address | undefined;
 
 const found = Object.entries(deployments).find(([path]) => path.endsWith(`/${CHAIN_ID}.json`));

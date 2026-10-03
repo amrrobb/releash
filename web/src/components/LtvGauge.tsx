@@ -20,10 +20,16 @@ export function LtvGauge({ ltvBps, size = "lg" }: { ltvBps: number; size?: "lg" 
       </div>
       <div className="gauge__scale">
         <span style={{ left: "0%" }}>0</span>
-        <span style={{ left: `${MAX_LTV_BPS / 100}%` }}>50 borrow max</span>
-        <span className="gauge__scale-liq" style={{ left: `${LIQ_THRESHOLD_BPS / 100}%` }}>70 liquidation</span>
+        <span style={{ left: `${MAX_LTV_BPS / 100}%` }}>50</span>
+        <span className="gauge__scale-liq" style={{ left: `${LIQ_THRESHOLD_BPS / 100}%` }}>70</span>
         <span style={{ left: "100%" }}>100</span>
       </div>
+      {size === "lg" && (
+        <div className="gauge__legend">
+          <span><i className="lg-borrow" />borrow limit 50%</span>
+          <span><i className="lg-liq" />liquidation 70%</span>
+        </div>
+      )}
     </div>
   );
 }

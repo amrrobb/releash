@@ -14,10 +14,12 @@ export function useTx() {
   const [error, setError] = useState<{ name: string; message: string } | null>(null);
   const [done, setDone] = useState<string | null>(null);
 
-  async function run(label: string, calls: Call[] | (() => Call[] | Promise<Call[]>)): Promise<boolean> {
+  /** Returns null on success, else the decoded error (also shown via `error`). */
+  async function attempt(label: string, calls: Call[] | (() => Call[] | Promise<Call[]>)): Promise<{ name: string; message: string } | null> {
     if (!wallet) {
-      setError({ name: "NoWallet", message: "Connect a wallet or use the demo account first." });
-      return false;
+      const e = { name: "NoWallet", message: "Connect a wallet or use the demo account first." };
+      setError(e);
+      return e;
     }
     setPending(label);
     setError(null);
@@ -26,16 +28,19 @@ export function useTx() {
       const list = typeof calls === "function" ? await calls() : calls;
       for (const c of list) await send(wallet, c);
       setDone(label);
-      return true;
+      return null;
     } catch (e) {
       console.error(label, e);
-      setError(explainError(e));
-      return false;
+      const x = explainError(e);
+      setError(x);
+      return x;
     } finally {
       setPending(null);
       await qc.invalidateQueries();
     }
   }
 
-  return { run, pending, error, done, clear: () => setError(null) };
+  const run = async (label: string, calls: Call[] | (() => Call[] | Promise<Call[]>)) => (await attempt(label, calls)) === null;
+
+  return { run, attempt, setError, pending, error, done, clear: () => setError(null) };
 }

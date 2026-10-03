@@ -58,9 +58,9 @@ function normalizeMarket(raw: unknown): Market | null {
   return {
     open,
     label: open ? "OPEN" : label === "OPEN" ? "CLOSED" : label,
-    frozenSince: t(m.frozenSince ?? m.closedAt ?? m.closeAt ?? m.since),
-    nextOpen: t(m.nextOpen ?? m.opensAt ?? m.nextOpenAt),
-    price: typeof m.price === "number" ? m.price : undefined,
+    frozenSince: t(m.fridayCloseAt ?? m.frozenSince ?? m.closedAt ?? (open ? undefined : m.updatedAt)),
+    nextOpen: t(m.mondayOpenAt ?? m.nextOpen ?? m.opensAt),
+    price: typeof m.oraclePrice === "number" ? m.oraclePrice : typeof m.price === "number" ? m.price : undefined,
   };
 }
 
@@ -96,7 +96,9 @@ function normalizeEntry(e: Record<string, unknown>, i: number): AgentEntry {
   if (!Number.isFinite(ts)) ts = 0;
   const decision = (e.decision ?? {}) as Record<string, unknown>;
   const result = (e.result ?? {}) as Record<string, unknown>;
-  const error = (e.error ?? e.errorName ?? result.error ?? result.errorName) as string | undefined;
+  // The agent logs error as { name, args, shortMessage, details } (viem decodeError).
+  const errRaw = e.error ?? e.errorName ?? result.error ?? result.errorName;
+  const error = errRaw && typeof errRaw === "object" ? String((errRaw as { name?: string }).name ?? "Reverted") : (errRaw as string | undefined);
   const status = String(e.status ?? result.status ?? "");
   const blocked = Boolean(e.blocked ?? result.blocked) || /blocked|revert/i.test(status) || !!error;
   const ltv = e.ltvBps ?? (e.state as Record<string, unknown> | undefined)?.ltvBps;
@@ -105,7 +107,7 @@ function normalizeEntry(e: Record<string, unknown>, i: number): AgentEntry {
     id: String(e.id ?? `${ts}-${i}`),
     ts,
     action: String(e.action ?? decision.action ?? "hold"),
-    reason: String(e.reason ?? decision.reason ?? ""),
+    reason: String(e.reason ?? decision.reason ?? "").replace(/^Blocked by Releash:[^.]*\.\s*/, ""),
     amount: typeof (e.amount ?? decision.amount) === "number" ? ((e.amount ?? decision.amount) as number) : undefined,
     ltvBps: typeof ltv === "number" ? ltv : undefined,
     blocked,

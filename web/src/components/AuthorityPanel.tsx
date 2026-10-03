@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { getAddress, isAddress, parseUnits, type Address } from "viem";
-import { ABI, CUTOFF_HALVINGS, DEPLOYMENT } from "../config";
+import { ABI, AGENT_ADDRESS, CUTOFF_HALVINGS, DEPLOYMENT } from "../config";
 import { fmtDuration, fmtUsd, limitAt, short, usd } from "../lib/math";
 import { hasAgent, type VaultState } from "../lib/reads";
 import { useTx } from "../lib/tx";
@@ -136,7 +136,7 @@ export function AuthorityPanel({ owner, state }: { owner?: Address; state?: Vaul
 function MandateControls({ owner, state }: { owner?: Address; state?: VaultState }) {
   const m = state?.mandate;
   const current = hasAgent(m) ? m!.agent : undefined;
-  const preset = (DEPLOYMENT as { agent?: Address }).agent;
+  const preset = AGENT_ADDRESS ?? (DEPLOYMENT as { agent?: Address }).agent;
   const [agent, setAgent] = useState("");
   const [base, setBase] = useState("9000");
   const tx = useTx();
