@@ -3,8 +3,9 @@ import { DemoStrip } from "./components/DemoStrip";
 import { Feed } from "./components/Feed";
 import { Header } from "./components/Header";
 import { Hero } from "./components/Hero";
+import { HowItWorks } from "./components/HowItWorks";
 import { PositionCard } from "./components/PositionCard";
-import { CHAIN, DEPLOYMENT } from "./config";
+import { CHAIN, DEPLOYMENT, EXPLORER } from "./config";
 import { short } from "./lib/math";
 import { useVault } from "./lib/reads";
 import { useSigner } from "./lib/signer";
@@ -41,10 +42,11 @@ export default function App() {
             <Feed owner={address} />
           </div>
         </div>
+        <HowItWorks />
       </main>
       <footer className="foot">
-        <span>{CHAIN.name} · vault <span className="mono">{short(DEPLOYMENT.vault)}</span></span>
-        <span>Testnet only. Mock rNVDA and USDG. World ID proves a unique human, not identity.</span>
+        <span>{CHAIN.name} · vault {EXPLORER ? <a className="mono" href={`${EXPLORER}/address/${DEPLOYMENT.vault}`} target="_blank" rel="noreferrer">{short(DEPLOYMENT.vault)}</a> : <span className="mono">{short(DEPLOYMENT.vault)}</span>}</span>
+        <span>Testnet only. Mock rNVDA and USDG. World ID proves a unique, present human — it is not KYC.</span>
       </footer>
     </>
   );

@@ -271,3 +271,31 @@ main { max-width: 1320px; margin: 0 auto; padding: 0 24px 48px; }
 .stats dd { white-space: nowrap; font-size: 20px; }
 .stats dd.sub { white-space: normal; }
 .btn--primary:disabled { background: var(--surface-2); color: var(--dim); opacity: 1; }
+
+/* ---------------------------------------------------------------- how it works */
+.how { margin-top: 40px; padding-top: 32px; border-top: 1px solid var(--line); }
+.how__grid { display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 40px; }
+.how h2 { font-size: 22px; margin-bottom: 14px; }
+.how h3 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 12px; }
+.how__steps { margin: 0; padding-left: 20px; display: grid; gap: 10px; color: var(--muted); font-size: 14px; }
+.how__steps strong { color: var(--text); }
+.how__trust { margin: 0 0 12px; padding-left: 18px; display: grid; gap: 8px; color: var(--muted); font-size: 14px; }
+.how__list { list-style: none; margin: 0 0 12px; padding: 0; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.how__list li { display: flex; align-items: center; gap: 10px; padding: 9px 12px; font-size: 13px; border-top: 1px solid var(--line); }
+.how__list li:first-child { border-top: 0; }
+.how__list li > span:first-child { color: var(--muted); margin-right: auto; }
+.how__list a { color: var(--text); text-decoration: none; }
+.how__list a:hover { text-decoration: underline; }
+.tag--ok { color: var(--green); border-color: rgba(0, 200, 5, 0.4); background: var(--green-soft); }
+.foot a { color: var(--dim); }
+
+/* ---------------------------------------------------------------- demo controls */
+.demostrip__controls { max-width: 1320px; margin: 0 auto; padding: 0 24px 14px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.demostrip__result { font-size: 13px; color: var(--muted); margin-left: 6px; overflow-wrap: anywhere; }
+.demostrip__result--ok { color: var(--green); }
+.demostrip__result--bad { color: var(--red); font-family: var(--mono); font-size: 12px; }
+.demostrip__result a { color: inherit; }
+.side__head a { color: var(--muted); text-decoration: none; }
+@media (max-width: 1000px) { .how__grid { grid-template-columns: 1fr; gap: 28px; } }
+@media (max-width: 720px) { .demostrip__controls { padding: 0 16px 12px; } }
+.demostrip__market strong.unknown { color: var(--dim); }

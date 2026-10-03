@@ -31,6 +31,8 @@ export const WORLD_SIMULATE = env.VITE_WORLD_SIMULATE === "1";
 export const DEMO_PK = (env.VITE_DEMO_PK || undefined) as Hex | undefined;
 /** Optional: prefills the mandate form with the agent the demo runs. */
 export const AGENT_ADDRESS = (env.VITE_AGENT_ADDRESS || undefined) as Address | undefined;
+/** Sent as x-demo-key to the backend's /api/demo/* routes. Gates demo buttons only; it guards no funds. */
+export const DEMO_KEY: string = env.VITE_DEMO_KEY ?? "";
 export const CONTROL_OWNER = (env.VITE_CONTROL_OWNER || undefined) as Address | undefined;
 
 const found = Object.entries(deployments).find(([path]) => path.endsWith(`/${CHAIN_ID}.json`));
@@ -58,6 +60,7 @@ export const CHAIN =
         id: CHAIN_ID,
         name: CHAIN_ID === 46630 ? "Robinhood Chain Testnet" : `Chain ${CHAIN_ID}`,
         nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
+        testnet: true,
         rpcUrls: { default: { http: [RPC_URL] } },
         blockExplorers:
           CHAIN_ID === 46630

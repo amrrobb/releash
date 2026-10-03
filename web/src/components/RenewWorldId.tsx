@@ -1,10 +1,12 @@
-import { IDKitRequestWidget, proofOfHuman, type IDKitResult, type RpContext } from "@worldcoin/idkit";
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import type { Address } from "viem";
 import { ABI, DEPLOYMENT, WORLD_APP_ID, WORLD_SIMULATE } from "../config";
 import { api, BackendError, fetchRpContext, type RenewalResponse, type RpContextResponse } from "../lib/backend";
+import { waitForChainTime } from "../lib/chain";
 import { useTx } from "../lib/tx";
 import { TxStatus } from "./TxStatus";
+
+const WorldIdWidget = lazy(() => import("./WorldIdWidget"));
 
 const ACTION = "releash-renew";
 
@@ -37,8 +39,12 @@ export function RenewWorldId({ owner, agent, disabled }: { owner?: Address; agen
           }
           throw e;
         }
-        setStage("Submitting renewal…");
         const r = out.renewal;
+        if (Number(r.issuedAt) > 0) {
+          setStage("Waiting for the chain clock…");
+          await waitForChainTime(Number(r.issuedAt));
+        }
+        setStage("Submitting renewal…");
         const fail = await tx.attempt("renew", [
           {
             address: DEPLOYMENT.vault,
@@ -99,18 +105,18 @@ export function RenewWorldId({ owner, agent, disabled }: { owner?: Address; agen
       {err && <p className="txstatus txstatus--err" role="alert">{err}</p>}
       <TxStatus tx={tx} />
       {ctx && owner && (
-        <IDKitRequestWidget
-          open={open}
-          onOpenChange={setOpen}
-          app_id={(ctx.app_id ?? WORLD_APP_ID) as `app_${string}`}
-          action={ctx.action ?? ACTION}
-          rp_context={ctx.rp_context as RpContext}
-          allow_legacy_proofs={ctx.allow_legacy_proofs ?? false}
-          environment={ctx.environment}
-          preset={proofOfHuman({ signal: owner })}
-          onSuccess={(result: IDKitResult) => finish(result)}
-          onError={(code) => setErr(`World ID: ${code}`)}
-        />
+        <Suspense fallback={null}>
+          <WorldIdWidget
+            ctx={ctx}
+            appId={WORLD_APP_ID}
+            action={ACTION}
+            signal={owner}
+            open={open}
+            onOpenChange={setOpen}
+            onSuccess={(result) => finish(result)}
+            onError={(code) => setErr(`World ID: ${code}`)}
+          />
+        </Suspense>
       )}
     </div>
   );

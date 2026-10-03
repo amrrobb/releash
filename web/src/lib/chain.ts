@@ -63,3 +63,17 @@ export async function send(
   observeBlock((await publicClient.getBlock({ blockNumber: receipt.blockNumber })).timestamp);
   return receipt;
 }
+
+/**
+ * The backend may sign a renewal issued in the near future (max(latest block, renewalFloor + 1)),
+ * and renew() rejects issuedAt > block.timestamp. Wait until the chain's clock reaches it.
+ */
+export async function waitForChainTime(ts: number, timeoutMs = 20_000): Promise<void> {
+  const until = Date.now() + timeoutMs;
+  for (;;) {
+    const b = await publicClient.getBlock({ blockTag: "latest" });
+    observeBlock(b.timestamp);
+    if (Number(b.timestamp) >= ts || Date.now() > until) return;
+    await new Promise((r) => setTimeout(r, 150));
+  }
+}
