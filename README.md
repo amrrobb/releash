@@ -4,6 +4,7 @@
 Your agent can always make the loan safer. It can only add debt while you keep proving, with World ID, that you are still there.
 
 - Live app: https://releash.robbyn.xyz (add `?demo=1` for the side-by-side demo strip) · API: https://releash-api.robbyn.xyz/api/health
+- Repo: https://github.com/amrrobb/releash
 - Demo video: _n_
 - Network: Robinhood Chain testnet (46630). All contracts verified on Blockscout.
 
@@ -24,7 +25,7 @@ Your agent can always make the loan safer. It can only add debt while you keep p
 
 When you disappear, your position can only get safer. That is the property no other agent-permission design we found has: they fail *closed* on expiry, and for a leveraged loan, closed means liquidated.
 
-The agent's brain is **Jev** (TypeSafe's decision model, via OpenRouter `/api/alpha/decisions`), asked to choose among exactly the contract's actions: `hold`, `deleverage_10`, `deleverage_30`, `borrow_more`. Claude (Haiku 4.5) is the fallback when Jev is unsure. A deterministic LTV guard runs before either model, and **the contract is the last guard**: whatever the model says, an out-of-authority borrow reverts on-chain.
+The agent's brain is **Jev** (TypeSafe's decision model, via OpenRouter `/api/alpha/decisions`), asked to choose among exactly the contract's actions: `hold`, `deleverage_10`, `deleverage_30`, `borrow_more`. Claude (Haiku 4.5) is the fallback when Jev is unsure. Jev's probabilities are shown in the feed. A deterministic LTV guard runs before either model, the mandate's rules (for example the weekend LTV limit that triggers the Friday deleverage) can override the model, and **the contract is the last guard**: whatever the model says, an out-of-authority borrow reverts on-chain.
 
 ## Demo result (−35% Monday gap)
 
@@ -87,7 +88,7 @@ Mainnet integration targets (Robinhood Chain 4663, checked on-chain): Paxos USDG
 
 ## Trust assumptions and known limits
 
-- **World ID is verified off-chain.** The backend verifies the IDKit proof with the World Developer Portal (v4) and signs the `Renewal`. The vault trusts that key to attest "a unique human bound to this owner proved presence at `issuedAt`". It cannot touch funds. One World ID binds to one owner.
+- **World ID is verified off-chain.** The backend verifies the IDKit proof with the World Developer Portal (v4) and signs the `Renewal`. The hosted demo runs in simulator mode (`WORLD_SIMULATE=1`): the real IDKit v4 flow is implemented but not enabled on that deployment. The vault trusts that key to attest "a unique human bound to this owner proved presence at `issuedAt`". It cannot touch funds. One World ID binds to one owner.
 - **World ID is not KYC.** It proves a unique, present human, nothing about jurisdiction.
 - **The owner key alone can also restore authority** (`setMandate` with the same agent clears a revoke and can raise the base). Authority needs a World proof *or* the owner's key, never just the agent.
 - **An agent can bleed collateral by sandwiching its own deleverage** within the 15% ceiling. Mitigation: the agent software deleverages at most once per 20 s per owner; the owner can `fire` it. A production version would route deleverage through a TWAP or an RFQ.
