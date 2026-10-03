@@ -3,7 +3,7 @@
 **Auto-deleverage for stock-backed loans on Robinhood Chain.**
 Your agent can always make the loan safer. It can only add debt while you keep proving, with World ID, that you are still there.
 
-- Live app: _n_
+- Live app: https://releash.robbyn.xyz (add `?demo=1` for the side-by-side demo strip) · API: https://releash-api.robbyn.xyz/api/health
 - Demo video: _n_
 - Network: Robinhood Chain testnet (46630). All contracts verified on Blockscout.
 
