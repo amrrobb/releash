@@ -25,15 +25,13 @@ await flash("start");
 await page.waitForTimeout(800);
 const t0 = Date.now();
 const h1 = (await page.locator("#hero-h").innerText()).replace(/\s+/g, " ");
-if (!/Close always/.test(h1)) throw new Error(`hero says ${h1}`);
-// The app grid is visible under the hero at 1920x1080, so the hero must be filmed in the same state the take
-// starts from (after Reset demo, before renew): an empty authority meter.
-const meter = (await page.getByTestId("authority-value").innerText().catch(() => "?")).trim();
-if (meter !== "$0.00") throw new Error(`meter reads ${meter}; press Reset demo first so the hero matches the take's opening state`);
+if (!/Step away/.test(h1)) throw new Error(`hero says ${h1}`);
+// The redesigned landing (/) has no live meter: it is a static story page. The take starts from /demo.
+const meter = "n/a";
 await page.waitForTimeout(6000);
 const s0 = Date.now();
 // Smooth scroll to the app grid.
-const target = await page.evaluate(() => document.querySelector(".grid").getBoundingClientRect().top + window.scrollY - 80);
+const target = await page.evaluate(() => document.querySelector("#story").getBoundingClientRect().top + window.scrollY - 80);
 for (let i = 1; i <= 60; i++) { await page.evaluate((y) => window.scrollTo(0, y), Math.round(target * (0.5 - 0.5 * Math.cos(Math.PI * i / 60)))); await page.waitForTimeout(33); }
 await page.waitForTimeout(3000);
 take.beats.hero = { start: t0, effect: t0, scroll: s0, end: Date.now(), data: { h1, meter } };

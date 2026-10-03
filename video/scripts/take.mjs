@@ -249,7 +249,7 @@ await beat("attempt", async () => {
   const r = await waitDemoResult(120_000);
   const eff = now();
   if (!/Blocked on-chain: AuthorityExceeded/.test(r)) throw new Error(`strip says "${r}"`);
-  const hit = await waitFeed(/Blocked on-chain: AuthorityExceeded/, before, 30_000);
+  const hit = await waitFeed(/Blocked on-chain[\s\S]*AuthorityExceeded/, before, 30_000);
   const d1 = pos(ALICE).debt;
   if (Math.abs(d1 - d0) > 0.01) throw new Error(`debt moved ${d0} -> ${d1}`);
   assertUntouched("attempt");
@@ -309,7 +309,7 @@ await beat("gap", async () => {
   await scrollTo(0);
   const c = await click("demo-gap");
   const r = await waitDemoResult(120_000);
-  if (!/gapped/.test(r)) throw new Error(r);
+  if (!/gapped|dropped/.test(r)) throw new Error(r);
   const gappedAt = now();
   const st = await until(async () => ((await page.getByTestId("side-control").locator(".pill").innerText()) === "LIQUIDATED" ? "LIQUIDATED" : null), 150_000, 500);
   const liqAt = now();

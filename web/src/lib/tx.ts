@@ -1,14 +1,18 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import type { Abi, Address } from "viem";
+import type { Abi, Address, WalletClient } from "viem";
 import { explainError, send } from "./chain";
 import { useSigner } from "./signer";
 
 export type Call = { address: Address; abi: Abi; functionName: string; args: readonly unknown[] };
 
-/** Runs one or more calls in order (e.g. approve then deposit) and refreshes reads afterwards. */
-export function useTx() {
-  const { wallet } = useSigner();
+/**
+ * Runs one or more calls in order (e.g. approve then deposit) and refreshes reads afterwards.
+ * `walletOverride` pins the signer (the /demo page always signs as the demo account, Alice).
+ */
+export function useTx(walletOverride?: WalletClient) {
+  const signer = useSigner();
+  const wallet = walletOverride ?? signer.wallet;
   const qc = useQueryClient();
   const [pending, setPending] = useState<string | null>(null);
   const [error, setError] = useState<{ name: string; message: string } | null>(null);

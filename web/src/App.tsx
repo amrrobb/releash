@@ -1,53 +1,28 @@
-import { AuthorityPanel } from "./components/AuthorityPanel";
-import { DemoStrip } from "./components/DemoStrip";
-import { Feed } from "./components/Feed";
-import { Header } from "./components/Header";
-import { Hero } from "./components/Hero";
-import { HowItWorks } from "./components/HowItWorks";
-import { PositionCard } from "./components/PositionCard";
-import { CHAIN, DEPLOYMENT, EXPLORER } from "./config";
-import { short } from "./lib/math";
-import { useVault } from "./lib/reads";
-import { useSigner } from "./lib/signer";
+import { lazy, Suspense } from "react";
+import { Nav } from "./components/Nav";
+import { DemoPage } from "./pages/DemoPage";
+import { LandingPage } from "./pages/LandingPage";
+import { usePath } from "./lib/router";
 
-const demo = new URLSearchParams(window.location.search).get("demo") === "1";
+const AppPage = lazy(() => import("./pages/AppPage").then((m) => ({ default: m.AppPage })));
+const SecurityPage = lazy(() => import("./pages/SecurityPage").then((m) => ({ default: m.SecurityPage })));
+
+const TITLES: Record<string, string> = {
+  "/": "Releash — step away, keep risk in check",
+  "/demo": "Demo · Releash",
+  "/app": "My position · Releash",
+  "/security": "Security & trust · Releash",
+};
 
 export default function App() {
-  const { address } = useSigner();
-  const vault = useVault(address);
-  const state = vault.data;
-
+  const path = usePath();
+  document.title = TITLES[path];
   return (
     <>
-      <Header state={state} />
-      {demo && <DemoStrip owner={address} state={state} />}
-      <main>
-        {!demo && <Hero />}
-        {vault.isError && (
-          <p className="banner" role="alert">
-            Can't read the vault on {CHAIN.name}. Is the RPC up? ({(vault.error as Error)?.message?.split("\n")[0]})
-          </p>
-        )}
-        {!address && (
-          <p className="banner banner--info">Connect a wallet, or use the demo account, to open a position. Anyone can play the borrower.</p>
-        )}
-        <div className="grid">
-          <div className="col col--left">
-            <PositionCard owner={address} state={state} />
-          </div>
-          <div className="col col--center">
-            <AuthorityPanel owner={address} state={state} />
-          </div>
-          <div className="col col--right">
-            <Feed owner={address} />
-          </div>
-        </div>
-        <HowItWorks />
-      </main>
-      <footer className="foot">
-        <span>{CHAIN.name} · vault {EXPLORER ? <a className="mono" href={`${EXPLORER}/address/${DEPLOYMENT.vault}`} target="_blank" rel="noreferrer">{short(DEPLOYMENT.vault)}</a> : <span className="mono">{short(DEPLOYMENT.vault)}</span>}</span>
-        <span>Testnet only. Mock rNVDA and USDG. World ID proves a unique, present human — it is not KYC.</span>
-      </footer>
+      <Nav />
+      <Suspense fallback={<main className="wrap" style={{ minHeight: "60vh" }} />}>
+        {path === "/demo" ? <DemoPage /> : path === "/app" ? <AppPage /> : path === "/security" ? <SecurityPage /> : <LandingPage />}
+      </Suspense>
     </>
   );
 }

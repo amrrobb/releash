@@ -170,7 +170,7 @@ await beat("Agent tries $1,500", async () => {
   await click("demo-attempt");
   const r = await waitDemoResult(120_000);
   if (!/Blocked on-chain: AuthorityExceeded/.test(r)) throw new Error(`strip says "${r}"`);
-  const hit = await waitFeed(/Blocked on-chain: AuthorityExceeded/, before, 30_000);
+  const hit = await waitFeed(/Blocked on-chain[\s\S]*AuthorityExceeded/, before, 30_000);
   const debt1 = pos(ALICE).debt;
   return `strip "${r}"; feed ${hit ? "shows red line" : "MISSING red line"}; chain debt ${debt0} -> ${debt1}`;
 });
@@ -208,7 +208,7 @@ await beat("Friday close", async () => {
 await beat("Monday gap -35%", async () => {
   await click("demo-gap");
   const r = await waitDemoResult(120_000);
-  if (!/gapped/.test(r)) throw new Error(r);
+  if (!/gapped|dropped/.test(r)) throw new Error(r);
   const st = await until(async () => {
     const c = await page.getByTestId("side-control").locator(".pill").innerText();
     return c === "LIQUIDATED" ? c : null;
