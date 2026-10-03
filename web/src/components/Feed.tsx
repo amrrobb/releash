@@ -60,6 +60,9 @@ function fromAgent(e: AgentEntry): Item {
   const title = (ACTION_TITLE[e.action] ?? `Agent: ${e.action}`) + (e.action === "borrow" && e.amount ? ` ${fmtUsd(e.amount)}` : "");
   if (e.blocked)
     return { id: `a-${e.id}`, ts: e.ts, source: "agent", tone: "bad", title: `Blocked on-chain: ${e.error ?? "Reverted"}`, detail: `${title}. ${e.reason}`, txHash: e.txHash };
+  // A decision the agent did not send (cooldown, no room) must not read as if it happened.
+  if (e.action !== "hold" && !e.txHash && /not sent/i.test(e.reason))
+    return { id: `a-${e.id}`, ts: e.ts, source: "agent", tone: "dim", title: `${title} (skipped)`, detail: e.reason };
   return { id: `a-${e.id}`, ts: e.ts, source: "agent", tone: e.action === "hold" ? "dim" : "info", title, detail: e.reason, txHash: e.txHash };
 }
 

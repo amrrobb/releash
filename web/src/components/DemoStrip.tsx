@@ -68,7 +68,14 @@ export function DemoStrip({ owner, state }: { owner?: Address; state?: VaultStat
   const qc = useQueryClient();
   const [pending, setPending] = useState<string | null>(null);
   const [result, setResult] = useState<{ tone: "ok" | "bad"; text: string; txHash?: string } | null>(null);
-  const liq = (evs?: { name: string }[]) => !!evs?.some((e) => e.name === "Liquidated");
+  // Liquidated only counts if it happened after the position was last opened: Reset demo re-borrows,
+  // and an old liquidation must not paint a fresh control red before the gap.
+  const liq = (evs?: { name: string; blockNumber: bigint }[]) => {
+    if (!evs?.length) return false;
+    const last = (n: string) => evs.reduce((m, e) => (e.name === n && e.blockNumber > m ? e.blockNumber : m), -1n);
+    const liquidated = last("Liquidated");
+    return liquidated >= 0n && liquidated >= last("Borrowed");
+  };
 
   async function run(label: string, path: string, body: unknown, describe: (r: never) => { tone: "ok" | "bad"; text: string; txHash?: string }) {
     setPending(label);
