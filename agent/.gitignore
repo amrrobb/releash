@@ -4,3 +4,6 @@ market.json
 market.json.tmp
 .env
 *.keys.json
+log.*.jsonl
+market.*.json
+market.*.json.tmp

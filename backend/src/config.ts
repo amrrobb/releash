@@ -25,8 +25,8 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env) {
     signerPk,
     deadlineSeconds: Number(env.RENEWAL_TTL ?? 600),
     dbPath: env.DB_PATH ?? `${ROOT}backend/releash-${chainId}-${deployments.vault.toLowerCase()}.db`,
-    agentLog: env.AGENT_LOG ?? `${ROOT}agent/log.jsonl`,
-    marketFile: env.MARKET_FILE ?? `${ROOT}agent/market.json`,
+    agentLog: env.AGENT_LOG ?? `${ROOT}agent/${local ? "log.jsonl" : `log.${chainId}.jsonl`}`,
+    marketFile: env.MARKET_FILE ?? `${ROOT}agent/${local ? "market.json" : `market.${chainId}.json`}`,
     world: {
       simulate: env.WORLD_SIMULATE === "1" || env.WORLD_SIMULATE === "true",
       appId: env.WORLD_APP_ID,

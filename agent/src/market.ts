@@ -1,8 +1,8 @@
 import { existsSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { type Address } from "viem";
-import { AGENT_DIR, dep, feedAbi, poolAbi, pub, send, stockAbi, usdgAbi, latestTs, type Wallet } from "./chain.js";
+import { AGENT_DIR, CHAIN_ID, LOCAL, dep, feedAbi, poolAbi, pub, send, stockAbi, usdgAbi, latestTs, type Wallet } from "./chain.js";
 
-export const MARKET_FILE = process.env.MARKET_FILE ?? `${AGENT_DIR}market.json`;
+export const MARKET_FILE = process.env.MARKET_FILE ?? `${AGENT_DIR}${LOCAL ? "market.json" : `market.${CHAIN_ID}.json`}`;
 
 export type Market = { open: boolean; label: "OPEN" | "WEEKEND"; fridayCloseAt?: number; mondayOpenAt?: number; price: number };
 

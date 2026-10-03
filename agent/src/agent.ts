@@ -1,9 +1,9 @@
 import { appendFileSync, existsSync, readFileSync } from "node:fs";
 import { decodeEventLog, encodeFunctionData, getAddress, type Address, type Hash, type TransactionReceipt } from "viem";
-import { AGENT_DIR, allErrorsAbi, decodeError, dep, jsonSafe, poolAbi, pub, vaultAbi, settle, sleep, type Wallet } from "./chain.js";
+import { AGENT_DIR, CHAIN_ID, LOCAL, allErrorsAbi, decodeError, dep, jsonSafe, poolAbi, pub, vaultAbi, settle, sleep, type Wallet } from "./chain.js";
 import { readMarket, type Market } from "./market.js";
 
-export const LOG_FILE = process.env.AGENT_LOG ?? `${AGENT_DIR}log.jsonl`;
+export const LOG_FILE = process.env.AGENT_LOG ?? `${AGENT_DIR}${LOCAL ? "log.jsonl" : `log.${CHAIN_ID}.jsonl`}`;
 const MANDATES_FILE = process.env.MANDATES_FILE ?? `${AGENT_DIR}mandates.json`;
 
 export const GUARD_HARD_BPS = 6500; // > 65% LTV: deleverage 30%, no model asked
