@@ -28,6 +28,10 @@ export function Hero() {
         </li>
       </ol>
       <p className="builton">Built on Robinhood Chain · USDG · World ID</p>
+      <p className="builton builton--note">
+        Shared demo account — anyone can press these. Press Reset demo first (~1 min) for a clean run. Demo controls:{" "}
+        <a href="?demo=1">open with ?demo=1</a>
+      </p>
     </section>
   );
 }

@@ -320,3 +320,8 @@ main { max-width: 1320px; margin: 0 auto; padding: 0 24px 48px; }
 .feed__pin-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 700; margin-bottom: 4px; }
 .feed__pin-label time { text-transform: none; letter-spacing: 0; font-weight: 400; }
 .delta__wait { font-size: 15px; font-weight: 600; color: var(--muted); line-height: 1.35; }
+.renew__real { display: flex; align-items: center; gap: 10px; margin: 10px 0 0; font-size: 13px; color: var(--muted); flex-wrap: wrap; }
+.demostrip__shared { max-width: 1320px; margin: 0 auto; padding: 0 24px 8px; font-size: 12px; color: var(--amber); }
+.builton--note { margin-top: -14px; color: var(--muted); font-weight: 500; }
+.builton--note a { color: var(--green); }
+@media (max-width: 720px) { .demostrip__shared { padding: 0 16px 8px; } }

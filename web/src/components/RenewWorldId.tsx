@@ -90,17 +90,26 @@ export function RenewWorldId({ owner, agent, disabled }: { owner?: Address; agen
   return (
     <div className="renew">
       <div className="renew__buttons">
-        <button className="btn btn--primary btn--lg" onClick={startReal} disabled={disabled || !owner || busy || !WORLD_APP_ID} data-testid="renew">
-          <WorldGlyph /> {stage ?? (tx.pending === "renew" ? "Confirming…" : "Renew with World ID")}
-        </button>
-        {WORLD_SIMULATE && (
-          <button className="btn btn--ghost" onClick={simulate} disabled={disabled || !owner || busy} data-testid="simulate">
-            Simulate World ID <span className="tag">demo</span>
+        {WORLD_SIMULATE ? (
+          // This deployment's backend runs WORLD_SIMULATE=1: the simulated proof is the one working path, so it
+          // is the primary action. The real IDKit flow stays in the code, labelled as not enabled here.
+          <button className="btn btn--primary btn--lg" onClick={simulate} disabled={disabled || !owner || busy} data-testid="simulate">
+            <WorldGlyph /> {stage ?? (tx.pending === "renew" ? "Confirming…" : "Renew with World ID (simulated)")}
+          </button>
+        ) : (
+          <button className="btn btn--primary btn--lg" onClick={startReal} disabled={disabled || !owner || busy || !WORLD_APP_ID} data-testid="renew">
+            <WorldGlyph /> {stage ?? (tx.pending === "renew" ? "Confirming…" : "Renew with World ID")}
           </button>
         )}
       </div>
+      {WORLD_SIMULATE && (
+        <p className="renew__real" data-testid="real-flow-note">
+          <button className="btn btn--ghost btn--sm" disabled aria-disabled="true">Real World App flow</button>
+          <span>Implemented, not enabled on this deployment.</span>
+        </p>
+      )}
       <p className="quiet small">
-        {disabled ? "Appoint an agent first." : !WORLD_APP_ID ? "World ID app id not set (VITE_WORLD_APP_ID)." : "Proves a unique, present human. Not KYC. Refills authority and restarts the decay clock."}
+        {disabled ? "Appoint an agent first." : !WORLD_SIMULATE && !WORLD_APP_ID ? "World ID app id not set (VITE_WORLD_APP_ID)." : "Proves a unique, present human. Not KYC. Refills authority and restarts the decay clock."}
       </p>
       {err && <p className="txstatus txstatus--err" role="alert">{err}</p>}
       <TxStatus tx={tx} />

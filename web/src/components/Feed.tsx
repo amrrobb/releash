@@ -107,7 +107,10 @@ export function Feed({ owner }: { owner?: Address }) {
   }
 
   // Pin the newest thing the agent actually did (borrow, deleverage, or a refused attempt).
-  const pinned = items.find((it) => /^(Agent (borrowed|deleveraged)|Blocked on-chain)/.test(it.title));
+  // Only actions under the current mandate: Reset demo sets the mandate again, and an action from before it
+  // (e.g. a refused borrow from the last run) must not greet the next viewer.
+  const mandateAt = items.find((it) => /^(Mandate set|Fired)/.test(it.title))?.ts ?? 0;
+  const pinned = items.find((it) => it.ts >= mandateAt && /^(Agent (borrowed|deleveraged)|Blocked on-chain)/.test(it.title));
 
   return (
     <section className="panel feed" aria-labelledby="feed-h">

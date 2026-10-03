@@ -173,6 +173,7 @@ export function DemoStrip({ owner, state }: { owner?: Address; state?: VaultStat
         </div>
         <Side title="Control · no agent" tag="control" owner={controlOwner} state={control.data} events={controlEvents.data} />
       </div>
+      <p className="demostrip__shared">Shared demo account — anyone can press these. Press Reset demo first (~1 min) for a clean run.</p>
       <div className="demostrip__controls">
         <button className="btn btn--ghost btn--sm" onClick={close} disabled={busy || noKey} data-testid="demo-close">{pending === "Friday close" ? "Closing…" : "Friday close"}</button>
         <button className="btn btn--ghost btn--sm" onClick={gap} disabled={busy || noKey} data-testid="demo-gap">{pending === "Monday gap" ? "Gapping…" : "Monday gap −35%"}</button>
