@@ -32,10 +32,21 @@ The agent's brain is **Jev** (TypeSafe's decision model, via OpenRouter `/api/al
 | --- | --- | --- |
 | Start | 100 rNVDA @ $180, 8,800 USDG debt | 100 rNVDA @ $180, 8,000 USDG debt + agent |
 | Friday | nothing | agent deleverages 30% before the close |
-| Monday −35% | LTV 75% → **liquidated** | LTV ~61% → survives |
+| Monday −35% | LTV 75.2% → **liquidated** | LTV 62.1% → survives (agent trims to 59.7%) |
 | Equity after | ~$2.7k | ~$3.7k |
 
-Testnet transactions: _n_ (filled in from the live run)
+Testnet run (real time, half-life 120 s; authority 9,000 → 4,256 at 133 s → 2,100 at 256 s → 0 at 378 s):
+
+| Beat | Transaction |
+| --- | --- |
+| World ID renewal accepted (simulated proof) | [`0x250ae13e…`](https://explorer.testnet.chain.robinhood.com/tx/0x250ae13ed09efaefa13c57d29dfb6f617418d6d22c8ef1128620ba93d514ec63) |
+| Agent borrows within authority (8,000 → 8,775) | [`0x23d2e5a8…`](https://explorer.testnet.chain.robinhood.com/tx/0x23d2e5a8d439114f32b7350d555913df74624030d4c630f08dd7b89391a756d7) |
+| Agent borrows past authority → reverted `AuthorityExceeded(9,200, 8,700)` | [`0x282edb72…`](https://explorer.testnet.chain.robinhood.com/tx/0x282edb724b5df63af9af1a508ed4e698d34e51d42acfdaa39a5dc8332008c8fa) |
+| Friday: agent deleverages 30% (LTV 48.8% → 40.4%) | [`0xf0351454…`](https://explorer.testnet.chain.robinhood.com/tx/0xf0351454adf59154b77eb6da83d53765f9d773cd58634884e39d128bdc25b58c) |
+| Monday −35%: control liquidated (4,400 repaid, 39.49 rNVDA seized) | [`0xfd8f1981…`](https://explorer.testnet.chain.robinhood.com/tx/0xfd8f1981adfa4cc02bb6d7fdaee6fce1e5726dad9171524656a880729e5d68a0) |
+| Owner revokes the agent | [`0x3cb0895c…`](https://explorer.testnet.chain.robinhood.com/tx/0x3cb0895cfdb8e81e654c063e904c8ef1c7673bc9856d2136fa8955b19106233f) |
+| After revoke: agent still deleverages (552.83 repaid) | [`0x34474317…`](https://explorer.testnet.chain.robinhood.com/tx/0x34474317a2507ef90ec789af3518fe8c7b8f55619751111f016900d8ffd459c8) |
+| After revoke: agent borrow → reverted `MandateRevoked` | [`0x2be4e4fa…`](https://explorer.testnet.chain.robinhood.com/tx/0x2be4e4fa35d74f88f47e21da6484f1c34406d17142cf42ca57b901e9326bb69c) |
 
 ## Contracts (Robinhood Chain testnet, 46630)
 
