@@ -37,18 +37,18 @@ Foundry e2e (`test/Releash.e2e.t.sol`): both positions hold 100 rNVDA at $180 an
 | Collateral left | 60.5 rNVDA | 79.1 rNVDA |
 | Equity at the Monday price | $2,680 | $3,712 |
 
-Testnet run (real time, half-life 120 s; authority 9,000 → 4,256 at 133 s → 2,100 at 256 s → 0 at 378 s):
+Hosted run on Robinhood testnet (live stack, half-life 120 s, authority 9,500):
 
 | Beat | Transaction |
 | --- | --- |
-| World ID renewal accepted (simulated proof) | [`0x250ae13e…`](https://explorer.testnet.chain.robinhood.com/tx/0x250ae13ed09efaefa13c57d29dfb6f617418d6d22c8ef1128620ba93d514ec63) |
-| Agent borrows within authority (8,000 → 8,775) | [`0x23d2e5a8…`](https://explorer.testnet.chain.robinhood.com/tx/0x23d2e5a8d439114f32b7350d555913df74624030d4c630f08dd7b89391a756d7) |
-| Agent borrows past authority → reverted `AuthorityExceeded(9,200, 8,700)` | [`0x282edb72…`](https://explorer.testnet.chain.robinhood.com/tx/0x282edb724b5df63af9af1a508ed4e698d34e51d42acfdaa39a5dc8332008c8fa) |
-| Friday: agent deleverages 30% (LTV 48.8% → 40.4%) | [`0xf0351454…`](https://explorer.testnet.chain.robinhood.com/tx/0xf0351454adf59154b77eb6da83d53765f9d773cd58634884e39d128bdc25b58c) |
-| Monday −35%: control liquidated (4,400 repaid, 39.49 rNVDA seized) | [`0xfd8f1981…`](https://explorer.testnet.chain.robinhood.com/tx/0xfd8f1981adfa4cc02bb6d7fdaee6fce1e5726dad9171524656a880729e5d68a0) |
-| Owner revokes the agent | [`0x3cb0895c…`](https://explorer.testnet.chain.robinhood.com/tx/0x3cb0895cfdb8e81e654c063e904c8ef1c7673bc9856d2136fa8955b19106233f) |
-| After revoke: agent still deleverages (552.83 repaid) | [`0x34474317…`](https://explorer.testnet.chain.robinhood.com/tx/0x34474317a2507ef90ec789af3518fe8c7b8f55619751111f016900d8ffd459c8) |
-| After revoke: agent borrow → reverted `MandateRevoked` | [`0x2be4e4fa…`](https://explorer.testnet.chain.robinhood.com/tx/0x2be4e4fa35d74f88f47e21da6484f1c34406d17142cf42ca57b901e9326bb69c) |
+| World ID renewal accepted (simulated proof) | [`0xaeab75eb…`](https://explorer.testnet.chain.robinhood.com/tx/0xaeab75ebca93f90c2e332c841ece017196dd3db8ee48f4c8c67b251bf9937a2a) |
+| Agent levers up within authority (8,000 → 8,820), 3.5 s after the renewal | [`0xb7518757…`](https://explorer.testnet.chain.robinhood.com/tx/0xb7518757c60d9cf785af679ca783f9c8a170021d91db9027a15cef297a532a69) |
+| Agent tries 1,500 more → reverted `AuthorityExceeded(10,320, 9,222.9)` | [`0x64c5dd20…`](https://explorer.testnet.chain.robinhood.com/tx/0x64c5dd20238a0b3f59a00a35f43251f953b15088d28c0968ddbf2653f04f0193) |
+| Friday close: agent sells collateral, repays 2,646 (30%) | [`0x59cff9af…`](https://explorer.testnet.chain.robinhood.com/tx/0x59cff9af643865259424c031a1242651d9e8a4bbe8f0dc05384d1ab76a74b9a1) |
+| Monday −35%: control liquidated (4,400 repaid, 39.49 rNVDA seized); Releash position stays at ~60% LTV | [`0xf12d0251…`](https://explorer.testnet.chain.robinhood.com/tx/0xf12d025130cc1567d76e446d2f1c64217c1e0f3b9bf9877a304275a8a7bd65b8) |
+| Owner revokes the agent | [`0xa33cda25…`](https://explorer.testnet.chain.robinhood.com/tx/0xa33cda2544a826ee4d15e6c33ea33b1b8a22ed371dae5f721774f3c31be5d771) |
+| After revoke: agent still deleverages | [`0x2d295417…`](https://explorer.testnet.chain.robinhood.com/tx/0x2d29541781fd482920503dd6121ec12d88215f4a5d48be7f514d65b02c59a15b) |
+| After revoke: agent borrow → reverted `MandateRevoked` | [`0x9ffd5d4c…`](https://explorer.testnet.chain.robinhood.com/tx/0x9ffd5d4c8c5a1ac1f1088d7f6f2b6d6757e7cb769a02d9036e224356d91bbe4e) |
 
 ## Contracts (Robinhood Chain testnet, 46630)
 
