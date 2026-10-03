@@ -1,0 +1,2 @@
+#!/bin/sh
+forge test -q || { echo "pre-push: forge test failed"; exit 1; }
