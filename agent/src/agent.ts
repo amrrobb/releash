@@ -1,6 +1,6 @@
 import { appendFileSync, existsSync, readFileSync } from "node:fs";
 import { decodeEventLog, encodeFunctionData, getAddress, type Address, type Hash, type TransactionReceipt } from "viem";
-import { AGENT_DIR, CHAIN_ID, LOCAL, allErrorsAbi, decodeError, dep, jsonSafe, poolAbi, pub, vaultAbi, settle, sleep, type Wallet } from "./chain.js";
+import { AGENT_DIR, CHAIN_ID, LOCAL, allErrorsAbi, decodeError, dep, jsonSafe, poolAbi, pub, vaultAbi, settle, sleep, withNonceRetry, type Wallet } from "./chain.js";
 import { readMarket, type Market } from "./market.js";
 
 export const LOG_FILE = process.env.AGENT_LOG ?? `${AGENT_DIR}${LOCAL ? "log.jsonl" : `log.${CHAIN_ID}.jsonl`}`;
@@ -280,7 +280,7 @@ function events(receipt: TransactionReceipt) {
 async function call(w: Wallet, functionName: string, args: unknown[], broadcastOnRevert: boolean): Promise<Outcome> {
   try {
     const { request } = await pub.simulateContract({ account: w.account, address: dep.vault, abi: [...vaultAbi, ...allErrorsAbi], functionName, args } as any);
-    const hash = await w.writeContract(request as any);
+    const hash = await withNonceRetry(w, () => w.writeContract(request as any));
     const receipt = await pub.waitForTransactionReceipt({ hash });
     await settle();
     if (receipt.status !== "success") return { txHash: hash, blocked: true, error: { name: "Reverted", shortMessage: "reverted when mined", args: undefined, details: undefined } };
@@ -292,7 +292,7 @@ async function call(w: Wallet, functionName: string, args: unknown[], broadcastO
     let txHash: Hash | undefined;
     if (broadcastOnRevert && process.env.BROADCAST_BLOCKED !== "0") {
       try {
-        txHash = await w.sendTransaction({ to: dep.vault, data: encodeFunctionData({ abi: vaultAbi, functionName, args } as any), gas: 300_000n } as any);
+        txHash = await withNonceRetry(w, () => w.sendTransaction({ to: dep.vault, data: encodeFunctionData({ abi: vaultAbi, functionName, args } as any), gas: 300_000n } as any));
         await pub.waitForTransactionReceipt({ hash: txHash });
         await settle();
       } catch (e) {

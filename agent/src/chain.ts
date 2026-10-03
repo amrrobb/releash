@@ -84,6 +84,21 @@ const SETTLE_MS = Number(process.env.SETTLE_MS ?? (LOCAL ? 0 : 1500));
 export const settle = () => (SETTLE_MS ? sleep(SETTLE_MS) : Promise.resolve());
 export type Wallet = ReturnType<typeof wallet>;
 
+/** Several processes share some keys (backend demo routes, keeper, agent loop), each with its own
+ * local nonce tracker. On a nonce error, resync from the chain and resend. */
+export async function withNonceRetry<T>(w: Wallet, sendTx: () => Promise<T>): Promise<T> {
+  for (let i = 0; ; i++) {
+    try {
+      return await sendTx();
+    } catch (e) {
+      const msg = `${(e as BaseError)?.shortMessage ?? ""} ${(e as { details?: string })?.details ?? ""} ${(e as Error)?.message ?? ""}`;
+      if (LOCAL || i >= 3 || !/nonce/i.test(msg)) throw e;
+      nonceManager.reset({ address: w.account.address, chainId: chain.id });
+      await sleep(1000 + i * 500);
+    }
+  }
+}
+
 /** Sends a contract call after simulating it; waits for the receipt. Throws on revert. */
 export async function send(w: Wallet, address: Address, abi: Abi, functionName: string, args: unknown[]) {
   let request: any;
@@ -97,7 +112,7 @@ export async function send(w: Wallet, address: Address, abi: Abi, functionName: 
       await sleep(1000);
     }
   }
-  const hash = await w.writeContract(request as any);
+  const hash = await withNonceRetry(w, () => w.writeContract(request as any));
   const receipt = await pub.waitForTransactionReceipt({ hash });
   if (receipt.status !== "success") throw new Error(`${functionName} reverted in ${hash}`);
   await settle();
