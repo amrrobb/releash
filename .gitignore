@@ -5,3 +5,8 @@ out/
 cache/
 broadcast/
 .next/
+*.db
+*.db-*
+agent/log.jsonl
+agent/market.json
+dist/
