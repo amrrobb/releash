@@ -26,6 +26,7 @@ Ranked by visibility to a judge.
 | L8 | LOW | /demo ≥1001px | Activity card bottom note sits under a large blank band when the agent card is taller. | BL group with space | Not changed: the band is the list's reserved space for new rows; filling it would reflow on every event. | — | Not fixed (by design) |
 | L9 | LOW | / 1440 | Hero has generous top padding (eyebrow 170px from top vs mockup ~130). | mockup parity | Left: changing hero padding shifts the recorded video marks. | 5 | Not fixed |
 | L10 | LOW | /demo 390 | The core comparison still starts just below an 844px fold (scenario bar is 3 × 44px targets). | UX §2 vs BL order | Accepted: shrinking targets below 44px fails the contract check; order is header → scenario → comparison → agent, as in the mockup. | — | Not fixed |
+| L11 | MEDIUM | /demo, /app 390, 375 | "Renew with World ID (simulated)" wrapped onto two lines beside its arrow inside the full-width primary button. | BL plan for growth; UX §2 | Phone action buttons: 14px inline padding, 8px gap, 15px type; one line down to 375px, still ≥44px tall. | 3 | Fixed |
 
 Verified with: `contract-check.mjs` (all ok), `axe-contrast.mjs`, after-shots at every viewport above. Not verified:
 RTL mirror and 200% zoom (no RTL locale shipped).

@@ -1,1 +1,1 @@
-11:26 JST — batches 1+2 deployed; contract-check 48/48 ok, axe 0 violations; re-shooting after state
+11:33 JST — L1-L7, L11 deployed and verified; running rehearsal BEATS=2,3,6,7,9 then Reset demo

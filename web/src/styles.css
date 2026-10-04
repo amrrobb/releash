@@ -538,3 +538,8 @@ section.feed { padding: 24px 28px 18px; display: flex; flex-direction: column; }
   .pagehead .market__price span { font-size: 19px; }
   .demo .pagehead { gap: 12px; }
 }
+/* L11: phones: "Renew with World ID (simulated)" broke over two lines beside its arrow. Tighter inset keeps
+   the primary action on one line down to 375px; the button stays 44px+ tall and full width. */
+@media (max-width: 720px) {
+  .actions-row .btn { padding: 0 14px; gap: 8px; font-size: 15px; }
+}
