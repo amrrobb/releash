@@ -1,1 +1,1 @@
-11:33 JST — L1-L7, L11 deployed and verified; running rehearsal BEATS=2,3,6,7,9 then Reset demo
+11:44 JST — done: all fixes deployed, contract-check 48/48, axe 0, rehearsal 1,2,3,6,7,9 PASS, demo reset

@@ -128,7 +128,7 @@ async function beat(name, fn) {
   return ok;
 }
 
-await page.goto(SITE_URL, { waitUntil: "networkidle" });
+await page.goto(SITE_URL, { waitUntil: "load" }); await page.waitForLoadState("networkidle", { timeout: 8000 }).catch(() => {}); // /demo polls getLogs continuously
 await page.getByTestId("address").waitFor({ timeout: 30000 });
 await page.waitForTimeout(2000);
 
