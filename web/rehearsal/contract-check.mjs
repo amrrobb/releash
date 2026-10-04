@@ -11,14 +11,16 @@ const ok = (cond, msg) => { if (!cond) fails.push(msg); console.log(`${cond ? "o
 const IDS = ["address", "market", "authority-meter", "authority-value", "can-add", "simulate", "revoke", "feed",
   "side-releash", "side-control", "equity-releash", "equity-control", "equity-delta", "demo-close", "demo-gap", "demo-attempt", "demo-reset", "demo-result"];
 
-const browser = await chromium.launch();
+const browser = await chromium.launch(process.env.HOST_MAP ? { args: ["--host-resolver-rules=MAP releash-api.robbyn.xyz 77.237.243.126"] } : {});
 const errors = {};
 async function open(path, w = 1440, h = 900) {
   const page = await browser.newPage({ viewport: { width: w, height: h } });
   errors[path] = [];
   page.on("console", (m) => { if (m.type() === "error") errors[path].push(m.text()); });
   page.on("pageerror", (e) => errors[path].push(`PAGEERROR ${e.message}`));
-  await page.goto(BASE + path, { waitUntil: "networkidle" });
+  // /demo polls the RPC continuously (getLogs pagination), so networkidle may never arrive: bound the wait.
+  await page.goto(BASE + path, { waitUntil: "load" });
+  await page.waitForLoadState("networkidle", { timeout: 8000 }).catch(() => {});
   await page.waitForTimeout(2500);
   return page;
 }

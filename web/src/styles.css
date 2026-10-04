@@ -504,7 +504,7 @@ section.feed { padding: 24px 28px 18px; display: flex; flex-direction: column; }
 .compare__title h2 { white-space: nowrap; }
 @media (min-width: 721px) and (max-width: 1500px) {
   .compare__title { flex-wrap: wrap; row-gap: 2px; }
-  .compare__addr { margin-left: 0; width: 100%; order: 3; min-height: 18px; }
+  .compare__addr { margin-left: 0; width: 100%; order: 3; min-height: 20px; } /* 20px + the 12px ::after bleed each side = 44px target */
 }
 /* L2: phone scenario bar. The label shared a row with one button and the other two wrapped full-width, so
    three equal choices rendered at two widths. One column, equal widths, label above. */

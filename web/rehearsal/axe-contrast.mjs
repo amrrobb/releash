@@ -2,12 +2,12 @@
 import { chromium } from "playwright";
 import AxeBuilder from "@axe-core/playwright";
 const BASE = (process.argv[2] ?? "https://releash.robbyn.xyz").replace(/\/$/, "");
-const b = await chromium.launch();
+const b = await chromium.launch(process.env.HOST_MAP ? { args: ["--host-resolver-rules=MAP releash-api.robbyn.xyz 77.237.243.126"] } : {});
 let bad = 0;
 for (const path of ["/", "/demo", "/app", "/security"]) for (const w of [1440, 375]) {
   const ctx = await b.newContext({ viewport: { width: w, height: 900 } });
   const p = await ctx.newPage();
-  await p.goto(BASE + path, { waitUntil: "networkidle" });
+  await p.goto(BASE + path, { waitUntil: "load" }); await p.waitForLoadState("networkidle", { timeout: 8000 }).catch(() => {});
   await p.waitForTimeout(2500);
   const r = await new AxeBuilder({ page: p }).withRules(["color-contrast"]).analyze();
   const nodes = r.violations.flatMap((v) => v.nodes);
