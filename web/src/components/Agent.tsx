@@ -23,8 +23,9 @@ export function CeilingBar({ a, compact = false }: { a: Authority; compact?: boo
   const debt = pct(a.debt, a.base);
   // Two labels above the bar (compact) push apart when the marks are close.
   const near = Math.abs(knob - debt) < 16;
-  const debtShift = compact && near ? (debt <= knob ? "translateX(-100%)" : "translateX(0)") : undefined;
-  const knobShift = compact && near ? (debt <= knob ? "translateX(-20%)" : "translateX(-100%)") : undefined;
+  // Each label anchors on its own mark and grows away from the other, with a 6px gap, so they never overlap.
+  const debtShift = compact && near ? (debt <= knob ? "translateX(calc(-100% - 6px))" : "translateX(6px)") : undefined;
+  const knobShift = compact && near ? (debt <= knob ? "translateX(6px)" : "translateX(calc(-100% - 6px))") : undefined;
   return (
     <div className={`ceiling${compact ? " ceiling--compact" : ""}`} data-testid="authority-meter">
       <div className="ceiling__track" aria-hidden>

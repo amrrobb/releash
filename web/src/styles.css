@@ -496,3 +496,45 @@ section.feed { padding: 24px 28px 18px; display: flex; flex-direction: column; }
 /* /demo: a status line must never add height to the 1920x1080 frame; it sits in the card's bottom padding. */
 .demo .actions-row { position: relative; }
 .demo .actions-row .txline { position: absolute; left: 0; top: calc(100% + 2px); margin: 0; }
+
+/* ---------------------------------------------------------------- layout pass (docs/LAYOUT-REVIEW.md) */
+/* L1: between 721 and 1500px the three-column comparison is too narrow for title + pill + address on one
+   line; "Without Releash" broke onto two lines and its figure sat 33px below the other side's. The address
+   gets its own line on both sides so the two figures share a baseline. */
+.compare__title h2 { white-space: nowrap; }
+@media (min-width: 721px) and (max-width: 1500px) {
+  .compare__title { flex-wrap: wrap; row-gap: 2px; }
+  .compare__addr { margin-left: 0; width: 100%; order: 3; min-height: 18px; }
+}
+/* L2: phone scenario bar. The label shared a row with one button and the other two wrapped full-width, so
+   three equal choices rendered at two widths. One column, equal widths, label above. */
+@media (max-width: 720px) {
+  .scenario { display: grid; grid-template-columns: 1fr; gap: 8px; padding: 12px; }
+  .scenario__label { margin: 0 0 0 2px; font-size: 13px; }
+  .scenario .btn { width: 100%; }
+  .scenario__result { min-width: 0; padding: 2px 2px 0; }
+  .scenario__reset { justify-self: center; }
+}
+/* L4: /app at two columns: the activity list set the row height (700px list), leaving ~280px of empty card
+   under Agent permissions. The feed now takes the permissions card's height and scrolls inside it. */
+@media (min-width: 1001px) {
+  .app section.feed { contain: size; }
+  .app section.feed .feed__list { max-height: none; flex: 1 1 0; min-height: 0; overflow-y: auto; }
+}
+/* L6: landing "Built on" strip on phones: the side rules took a row slot each, leaving "World ID · Jev"
+   orphaned beside a lone rule. Drop the rules and centre the wrap. */
+@media (max-width: 720px) {
+  .builton { gap: 8px 14px; padding-top: 4px; }
+  .builton::before, .builton::after { display: none; }
+}
+/* L7: landing steps: subtitle and body sat 10px apart, reading as two groups; the mockup keeps them one. */
+.steps .why { margin-top: 4px; }
+/* L5: phones: the market block stacked state over price and cost ~70px above the scenario bar, pushing the
+   comparison below the fold. One line: state then price. */
+@media (max-width: 720px) {
+  .pagehead .market { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; }
+  .pagehead .market__price { margin-top: 0; }
+  .pagehead .market__price strong { font-size: 26px; }
+  .pagehead .market__price span { font-size: 19px; }
+  .demo .pagehead { gap: 12px; }
+}
